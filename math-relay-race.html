@@ -1,0 +1,3115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Math Relay Race!</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  font-family: 'Comic Sans MS', 'Marker Felt', 'Segoe UI', system-ui, sans-serif;
+  background: #0a1628;
+}
+
+.screen { position: fixed; inset: 0; display: none; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* === KaTeX size override === */
+.katex { font-size: 1.05em; }
+.question-text .katex { font-size: 1em; }
+.choice-btn .katex { font-size: 1em; }
+
+/* ======================== START SCREEN ======================== */
+#startScreen {
+  background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 35%, #fbc2eb 70%, #a18cd1 100%);
+  align-items: center; justify-content: flex-start;
+  padding: 2vh 2vw;
+  overflow-y: auto;
+}
+
+.title-wrap { text-align: center; margin: 1vh 0 1.5vh; }
+
+.title {
+  font-size: clamp(2.5rem, 8vw, 6.5rem);
+  font-weight: 900;
+  color: white;
+  text-shadow:
+    -3px -3px 0 #d63031, 3px -3px 0 #d63031,
+    -3px  3px 0 #d63031, 3px  3px 0 #d63031,
+    0 8px 0 #b71540, 0 14px 30px rgba(0,0,0,0.4);
+  letter-spacing: 3px;
+  line-height: 1;
+}
+
+.title span { display: inline-block; animation: bounce 1.6s ease-in-out infinite; }
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-22px) rotate(3deg); }
+}
+
+.subtitle {
+  font-size: clamp(1rem, 2.5vw, 1.8rem);
+  color: white;
+  text-shadow: 0 3px 10px rgba(0,0,0,0.35);
+  margin-top: 1.5vh;
+  font-weight: bold;
+}
+
+.runners-deco {
+  font-size: clamp(1.5rem, 3.5vw, 2.8rem);
+  margin: 1vh 0;
+  letter-spacing: 0.8rem;
+  animation: runAcross 4s linear infinite;
+}
+
+@keyframes runAcross {
+  0%, 100% { transform: translateX(-10px); }
+  50% { transform: translateX(10px); }
+}
+
+.top-bar {
+  display: flex;
+  gap: 12px;
+  margin: 1vh 0 2vh;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.top-btn {
+  background: white;
+  color: #2d3436;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 18px;
+  font-size: clamp(0.9rem, 1.6vw, 1.15rem);
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.2), 0 8px 18px rgba(0,0,0,0.15);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.top-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+
+.grade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  max-width: 1200px;
+  width: 100%;
+  padding: 0 20px;
+}
+
+.grade-btn {
+  padding: 22px 14px;
+  font-size: clamp(1.05rem, 2vw, 1.5rem);
+  font-weight: 900;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  color: #2d3436;
+  box-shadow: 0 8px 0 rgba(0,0,0,0.25), 0 14px 30px rgba(0,0,0,0.25);
+  transition: transform 0.1s, box-shadow 0.1s;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.grade-btn .grade-emoji {
+  font-size: 2.2em;
+  display: block;
+  margin-bottom: 6px;
+  animation: wobble 2s ease-in-out infinite;
+}
+
+@keyframes wobble {
+  0%, 100% { transform: rotate(-5deg) scale(1); }
+  50% { transform: rotate(5deg) scale(1.08); }
+}
+
+.grade-btn:active { transform: translateY(6px); box-shadow: 0 2px 0 rgba(0,0,0,0.25); }
+.grade-btn:nth-child(1)  { background: linear-gradient(135deg, #ffeaa7, #fab1a0); }
+.grade-btn:nth-child(2)  { background: linear-gradient(135deg, #a8e6cf, #88d8c0); }
+.grade-btn:nth-child(3)  { background: linear-gradient(135deg, #74b9ff, #a29bfe); }
+.grade-btn:nth-child(4)  { background: linear-gradient(135deg, #fd79a8, #fdcb6e); }
+.grade-btn:nth-child(5)  { background: linear-gradient(135deg, #00cec9, #55efc4); }
+.grade-btn:nth-child(6)  { background: linear-gradient(135deg, #ffe066, #ffaaa7); }
+.grade-btn:nth-child(7)  { background: linear-gradient(135deg, #c4a3ff, #f6a3ff); }
+.grade-btn:nth-child(8)  { background: linear-gradient(135deg, #b1e5ff, #ffd3a3); }
+.grade-btn:nth-child(9)  { background: linear-gradient(135deg, #ff9a9e, #ffeaa7); }
+.grade-btn:nth-child(10) { background: linear-gradient(135deg, #ffd700, #51cf66); }
+
+.how-to {
+  margin-top: 2vh;
+  background: rgba(255,255,255,0.85);
+  padding: 12px 20px;
+  border-radius: 16px;
+  color: #2d3436;
+  font-weight: bold;
+  font-size: clamp(0.85rem, 1.4vw, 1.05rem);
+  max-width: 800px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* ======================== MODAL ======================== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+  overflow-y: auto;
+}
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: white;
+  border-radius: 25px;
+  padding: 28px 32px;
+  max-width: 720px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  position: relative;
+  animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPop {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.modal h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  margin-bottom: 18px;
+  color: #2d3436;
+  text-align: center;
+  font-weight: 900;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-weight: 900;
+  font-size: 1.2rem;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 3px 0 #c0392b;
+}
+.modal-close:active { transform: translateY(2px); box-shadow: 0 1px 0 #c0392b; }
+
+.setting-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 2px solid #f1f2f6;
+}
+.setting-row:last-child { border-bottom: none; }
+
+.setting-label {
+  font-weight: 900;
+  color: #2d3436;
+  font-size: clamp(1rem, 1.7vw, 1.2rem);
+}
+
+.setting-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.setting-opt {
+  padding: 10px 18px;
+  border: 3px solid #dfe6e9;
+  border-radius: 14px;
+  background: white;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: #2d3436;
+  transition: all 0.15s;
+}
+
+.setting-opt:hover { border-color: #74b9ff; }
+
+.setting-opt.active {
+  background: linear-gradient(135deg, #51cf66, #2f9e44);
+  color: white;
+  border-color: #2f9e44;
+  box-shadow: 0 4px 0 #1e7c30;
+}
+
+.setting-opt:active { transform: translateY(2px); }
+
+.team-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 16px;
+  margin-bottom: 14px;
+}
+.team-row.red { background: linear-gradient(135deg, #ff6b6b, #c92a2a); color: white; }
+.team-row.blue { background: linear-gradient(135deg, #4dabf7, #1864ab); color: white; }
+
+.team-row h3 {
+  font-size: 1.3rem;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.3);
+}
+
+.team-name-input {
+  padding: 12px 16px;
+  border: 3px solid white;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 900;
+  font-family: inherit;
+  background: rgba(255,255,255,0.95);
+  color: #2d3436;
+  width: 100%;
+}
+
+.mascot-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  gap: 6px;
+}
+
+.mascot-opt {
+  font-size: 2rem;
+  padding: 6px;
+  background: rgba(255,255,255,0.85);
+  border: 3px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  font-family: inherit;
+}
+
+.mascot-opt.active {
+  border-color: #ffd700;
+  background: white;
+  box-shadow: 0 0 12px #ffd700;
+  transform: scale(1.1);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.modal-btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  background: #dfe6e9;
+  color: #2d3436;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+}
+.modal-btn.primary {
+  background: linear-gradient(135deg, #51cf66, #2f9e44);
+  color: white;
+  box-shadow: 0 5px 0 #1e7c30;
+}
+.modal-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+.modal-btn.primary:active { box-shadow: 0 2px 0 #1e7c30; }
+
+.score-list {
+  list-style: none;
+}
+.score-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #fff, #f1f2f6);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: #2d3436;
+  border-left: 6px solid #ffd700;
+  align-items: center;
+}
+.score-list li .rank-badge {
+  background: #ffd700;
+  color: #1a202c;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-right: 10px;
+  font-size: 0.95rem;
+}
+.score-list li.top { background: linear-gradient(135deg, #ffd700, #ff9f43); color: #1a202c; }
+.score-list li.empty { background: #f1f2f6; color: #b2bec3; border-left-color: #b2bec3; justify-content: center; }
+
+.scores-grade-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.scores-tab {
+  padding: 8px 14px;
+  border: 2px solid #dfe6e9;
+  border-radius: 12px;
+  background: white;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+}
+.scores-tab.active {
+  background: linear-gradient(135deg, #74b9ff, #a29bfe);
+  color: white;
+  border-color: #a29bfe;
+}
+
+/* ======================== TOPIC SCREEN ======================== */
+#topicScreen {
+  background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 50%, #fd79a8 100%);
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+.topic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.back-btn {
+  background: white;
+  color: #2d3436;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: clamp(0.9rem, 1.6vw, 1.1rem);
+  box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+}
+.back-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+
+.topic-title {
+  color: white;
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  font-weight: 900;
+  text-shadow: 0 4px 0 rgba(0,0,0,0.25), 0 8px 20px rgba(0,0,0,0.3);
+  text-align: center;
+  flex: 1;
+}
+
+.ny-badge {
+  background: linear-gradient(135deg, #ffd700, #ff9f43);
+  color: #1a202c;
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-weight: 900;
+  font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+  border: 2px solid white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  white-space: nowrap;
+}
+
+.topic-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.topic-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: white;
+  border: none;
+  border-radius: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.2), 0 10px 25px rgba(0,0,0,0.15);
+  transition: transform 0.1s, box-shadow 0.1s;
+  color: #2d3436;
+}
+
+.topic-card:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+.topic-card.mixed {
+  background: linear-gradient(135deg, #ffd700, #ff9f43);
+  margin-bottom: 14px;
+  padding: 22px 24px;
+}
+
+.topic-card.mixed .topic-name { font-size: clamp(1.3rem, 2.6vw, 1.8rem); }
+
+.topic-emoji {
+  font-size: clamp(2rem, 4vw, 3rem);
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.topic-info { flex: 1; min-width: 0; }
+.topic-name {
+  font-size: clamp(1.05rem, 2vw, 1.4rem);
+  font-weight: 900;
+  color: #2d3436;
+  line-height: 1.2;
+}
+.topic-desc {
+  font-size: clamp(0.8rem, 1.3vw, 0.95rem);
+  color: #636e72;
+  margin-top: 3px;
+  font-weight: bold;
+}
+.topic-standard {
+  background: rgba(116, 185, 255, 0.25);
+  padding: 3px 10px;
+  border-radius: 8px;
+  display: inline-block;
+  margin-top: 5px;
+  font-weight: 900;
+  color: #1864ab;
+  font-size: clamp(0.7rem, 1.1vw, 0.85rem);
+}
+
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+/* ======================== GAME SCREEN ======================== */
+#gameScreen { background: #0a1628; }
+
+.game-header {
+  background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+  color: white;
+  padding: 6px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 5px solid #ffd700;
+  font-weight: bold;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.title-mini {
+  font-size: clamp(0.8rem, 1.5vw, 1.2rem);
+  text-shadow: 0 2px 10px rgba(255,215,0,0.6);
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.grade-badge {
+  background: #ffd700;
+  color: #1a202c;
+  padding: 5px 14px;
+  border-radius: 18px;
+  font-size: clamp(0.8rem, 1.3vw, 1rem);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.q-counter {
+  background: rgba(255,255,255,0.15);
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: clamp(0.8rem, 1.3vw, 1rem);
+  white-space: nowrap;
+}
+
+.header-btn {
+  border: none;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+  color: white;
+}
+
+.pause-btn { background: #f39c12; box-shadow: 0 3px 0 #d68910; }
+.pause-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #d68910; }
+
+.end-btn-header { background: #e74c3c; box-shadow: 0 3px 0 #c0392b; }
+.end-btn-header:active { transform: translateY(2px); box-shadow: 0 1px 0 #c0392b; }
+
+.split { flex: 1; display: flex; position: relative; overflow: hidden; }
+
+.divider {
+  width: 6px;
+  background: linear-gradient(180deg, #ffd700, #f59f00);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.divider::before {
+  content: 'VS';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffd700;
+  color: #1a202c;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.2rem;
+  border: 4px solid white;
+  z-index: 5;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.team-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.team-side.red {
+  background:
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15), transparent 40%),
+    linear-gradient(180deg, #ff6b6b 0%, #c92a2a 100%);
+}
+.team-side.blue {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.15), transparent 40%),
+    linear-gradient(180deg, #4dabf7 0%, #1864ab 100%);
+}
+
+.team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.team-name {
+  font-size: clamp(1.1rem, 2.2vw, 2rem);
+  font-weight: 900;
+  text-shadow: 0 3px 0 rgba(0,0,0,0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-mascot { font-size: 1.4em; }
+
+.score-display {
+  background: rgba(255,255,255,0.95);
+  padding: 5px 14px;
+  border-radius: 18px;
+  color: #2d3436;
+  font-weight: 900;
+  font-size: clamp(0.95rem, 1.7vw, 1.3rem);
+  box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+  white-space: nowrap;
+}
+
+.track {
+  height: clamp(38px, 5.5vh, 56px);
+  background: rgba(0,0,0,0.35);
+  border-radius: 30px;
+  position: relative;
+  margin-bottom: 6px;
+  overflow: hidden;
+  border: 3px solid rgba(255,255,255,0.6);
+  flex-shrink: 0;
+}
+
+.track-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd700 0%, #f59f00 50%, #ff6b6b 100%);
+  border-radius: 30px;
+  width: 0%;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2);
+}
+
+.track-runner {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(1.6rem, 3.5vh, 2.4rem);
+  transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 2;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+}
+
+.track-finish {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: clamp(1.3rem, 2.5vh, 1.8rem);
+  z-index: 1;
+}
+
+.power-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.power-btn {
+  background: rgba(255,255,255,0.95);
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 14px;
+  padding: 4px 12px;
+  font-family: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+  transition: all 0.15s;
+  color: #2d3436;
+  position: relative;
+}
+
+.power-btn .pw-icon { font-size: 1.4em; }
+.power-btn .pw-count {
+  background: #e74c3c;
+  color: white;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  min-width: 22px;
+}
+
+.power-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(0.7);
+}
+
+.power-btn:not(:disabled):hover { transform: translateY(-2px); }
+.power-btn:not(:disabled):active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+
+.power-btn.boost-active {
+  animation: boostGlow 1s ease-in-out infinite;
+}
+
+@keyframes boostGlow {
+  0%, 100% { box-shadow: 0 3px 0 rgba(0,0,0,0.2), 0 0 12px #ffd700; }
+  50% { box-shadow: 0 3px 0 rgba(0,0,0,0.2), 0 0 28px #ffd700, 0 0 50px #ff9f43; }
+}
+
+.runner-info {
+  text-align: center;
+  color: white;
+  font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+  font-weight: bold;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  flex-shrink: 0;
+}
+
+.timer-bar-wrap {
+  height: 8px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: none;
+}
+.timer-bar-wrap.active { display: block; }
+
+.timer-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #51cf66, #ffd700, #fa5252);
+  border-radius: 6px;
+  width: 100%;
+  transform-origin: right;
+}
+.timer-bar.warn { animation: timerPulse 0.4s ease-in-out infinite; }
+
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.question-card {
+  background: white;
+  border-radius: 18px;
+  padding: clamp(8px, 1.5vh, 16px) clamp(12px, 2.5vw, 22px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25), inset 0 -3px 0 rgba(0,0,0,0.06);
+  margin-bottom: 6px;
+  flex-shrink: 0;
+  border: 3px solid rgba(255,255,255,0.6);
+}
+
+.visual-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 6px;
+  max-height: clamp(60px, 12vh, 130px);
+}
+.visual-wrap svg { max-height: clamp(60px, 12vh, 130px); height: auto; width: auto; max-width: 100%; }
+.visual-wrap:empty { display: none; }
+
+.question-text {
+  font-size: clamp(1.1rem, 2.7vh, 2.1rem);
+  font-weight: 900;
+  text-align: center;
+  color: #2d3436;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.solution-panel {
+  background: linear-gradient(135deg, #fffbe6, #ffeaa7);
+  border: 3px dashed #f39c12;
+  border-radius: 14px;
+  padding: 8px 14px;
+  margin-bottom: 6px;
+  font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+  color: #2d3436;
+  font-weight: bold;
+  display: none;
+  animation: solutionPop 0.4s;
+  flex-shrink: 0;
+}
+.solution-panel.show { display: block; }
+.solution-panel .label { color: #d68910; margin-right: 6px; }
+
+@keyframes solutionPop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.choice-btn {
+  font-size: clamp(1rem, 2.8vh, 1.9rem);
+  font-weight: 900;
+  padding: 12px;
+  border: 4px solid white;
+  border-radius: 18px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.95);
+  color: #2d3436;
+  font-family: inherit;
+  transition: all 0.15s;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  text-align: center;
+  word-break: break-word;
+}
+
+.choice-btn:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.25);
+}
+
+.choice-btn.correct {
+  background: linear-gradient(135deg, #51cf66, #2f9e44) !important;
+  color: white !important;
+  border-color: #2f9e44 !important;
+  animation: correctPulse 0.6s;
+  box-shadow: 0 5px 0 #1e7c30, 0 0 30px rgba(81,207,102,0.6) !important;
+}
+
+.choice-btn.wrong {
+  background: linear-gradient(135deg, #fa5252, #c92a2a) !important;
+  color: white !important;
+  border-color: #c92a2a !important;
+  animation: wrongShake 0.5s;
+  opacity: 0.85;
+}
+
+.choice-btn.eliminated {
+  opacity: 0.25;
+  pointer-events: none;
+  filter: grayscale(0.7);
+}
+
+.choice-btn:disabled { cursor: default; }
+
+@keyframes correctPulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12) rotate(-2deg); }
+  70% { transform: scale(0.95) rotate(2deg); }
+  100% { transform: scale(1); }
+}
+
+@keyframes wrongShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-12px); }
+  75% { transform: translateX(12px); }
+}
+
+.streak-badge {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ffd700, #ff6b00);
+  color: #2d3436;
+  padding: 8px 18px;
+  border-radius: 22px;
+  font-weight: 900;
+  font-size: clamp(0.95rem, 1.8vw, 1.3rem);
+  box-shadow: 0 5px 18px rgba(0,0,0,0.4);
+  z-index: 5;
+  animation: streakPop 1.4s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  border: 3px solid white;
+}
+
+@keyframes streakPop {
+  0% { transform: translate(-50%, 30px) scale(0.3); opacity: 0; }
+  20% { transform: translate(-50%, 0) scale(1.2); opacity: 1; }
+  35% { transform: translate(-50%, 0) scale(1); }
+  85% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -40px) scale(0.8); opacity: 0; }
+}
+
+.tag-in {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 10;
+  pointer-events: none;
+  animation: tagFade 1.1s forwards;
+}
+
+.tag-in .runner-emoji {
+  font-size: clamp(4rem, 12vh, 8rem);
+  animation: tagInBounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 8px 20px rgba(0,0,0,0.6));
+}
+
+.tag-in .tag-text {
+  font-size: clamp(1.2rem, 2.6vw, 2rem);
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 4px 0 #1a202c, 0 8px 20px rgba(0,0,0,0.8);
+  margin-top: 8px;
+  letter-spacing: 2px;
+  animation: tagTextSlide 0.5s 0.2s backwards;
+}
+
+@keyframes tagInBounce {
+  0% { transform: translateY(-300px) rotate(-30deg) scale(0.5); opacity: 0; }
+  60% { transform: translateY(20px) rotate(15deg) scale(1.1); opacity: 1; }
+  100% { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
+}
+
+@keyframes tagTextSlide {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes tagFade {
+  0%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.flash-correct { animation: flashGreen 0.6s; }
+.flash-wrong { animation: flashRed 0.5s; }
+
+@keyframes flashGreen {
+  0%, 100% { box-shadow: inset 0 0 0 0 transparent; }
+  50% { box-shadow: inset 0 0 100px 30px rgba(81,207,102,0.5); }
+}
+
+@keyframes flashRed {
+  0%, 100% { box-shadow: inset 0 0 0 0 transparent; }
+  50% { box-shadow: inset 0 0 100px 30px rgba(220,53,69,0.5); }
+}
+
+/* ======================== PAUSE OVERLAY ======================== */
+.pause-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,22,40,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 100;
+  backdrop-filter: blur(6px);
+}
+.pause-overlay.active { display: flex; }
+
+.pause-overlay h2 {
+  color: white;
+  font-size: clamp(3rem, 8vw, 6rem);
+  text-shadow: 0 6px 0 #1a202c, 0 12px 30px rgba(0,0,0,0.6);
+  margin-bottom: 24px;
+  animation: pausePulse 1.5s ease-in-out infinite;
+}
+@keyframes pausePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.pause-overlay button {
+  padding: 22px 50px;
+  font-size: 1.6rem;
+  font-weight: 900;
+  border: none;
+  border-radius: 22px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #51cf66, #2f9e44);
+  color: white;
+  box-shadow: 0 8px 0 #1e7c30;
+  font-family: inherit;
+}
+.pause-overlay button:active { transform: translateY(5px); box-shadow: 0 3px 0 #1e7c30; }
+
+/* ======================== END SCREEN ======================== */
+#endScreen {
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 50%, #ff6b6b 100%);
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  text-align: center;
+  overflow-y: auto;
+  position: relative;
+}
+#endScreen.red-win {
+  background: linear-gradient(135deg, #ffeaa7 0%, #ff6b6b 30%, #c92a2a 70%, #ff6b6b 100%);
+  background-size: 300% 300%;
+  animation: bgShiftRed 8s ease-in-out infinite;
+}
+#endScreen.blue-win {
+  background: linear-gradient(135deg, #74b9ff 0%, #4dabf7 30%, #1864ab 70%, #4dabf7 100%);
+  background-size: 300% 300%;
+  animation: bgShiftBlue 8s ease-in-out infinite;
+}
+#endScreen.tie {
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 50%, #ff6b6b 100%);
+}
+
+@keyframes bgShiftRed {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes bgShiftBlue {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.victory-trophy {
+  position: fixed;
+  font-size: clamp(8rem, 22vw, 18rem);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  opacity: 0.13;
+  animation: trophyFloat 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes trophyFloat {
+  0%, 100% { transform: translate(-50%, -50%) rotate(-8deg) scale(1); }
+  50% { transform: translate(-50%, -55%) rotate(8deg) scale(1.05); }
+}
+
+.dancing-emoji {
+  position: absolute;
+  font-size: clamp(2rem, 5vw, 4rem);
+  animation: dancingMove 1.5s ease-in-out infinite;
+  z-index: 1;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+@keyframes dancingMove {
+  0%, 100% { transform: translateY(0) rotate(-15deg) scale(1); }
+  25% { transform: translateY(-20px) rotate(15deg) scale(1.2); }
+  50% { transform: translateY(-10px) rotate(-25deg) scale(0.9); }
+  75% { transform: translateY(-25px) rotate(20deg) scale(1.15); }
+}
+
+.giant-mascot {
+  font-size: clamp(4rem, 12vw, 9rem);
+  display: inline-block;
+  animation: giantSpin 1.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  filter: drop-shadow(0 8px 25px rgba(0,0,0,0.5));
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 2;
+}
+@keyframes giantSpin {
+  0%   { transform: rotate(0) scale(1); }
+  20%  { transform: rotate(72deg) scale(1.25); }
+  40%  { transform: rotate(180deg) scale(0.85); }
+  60%  { transform: rotate(288deg) scale(1.3); }
+  80%  { transform: rotate(360deg) scale(0.95); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.winning-team {
+  position: relative;
+  z-index: 5;
+  animation: winningWildDance 0.7s ease-in-out infinite alternate;
+  border-width: 12px !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 60px rgba(255,215,0,0.7), 0 0 100px rgba(255,215,0,0.4) !important;
+}
+@keyframes winningWildDance {
+  0%   { transform: rotate(-4deg) scale(1.05) translateY(0); }
+  100% { transform: rotate(4deg) scale(1.1)  translateY(-12px); }
+}
+
+.losing-team {
+  opacity: 0.65;
+  filter: grayscale(0.3);
+  animation: losingSad 3s ease-in-out infinite;
+}
+@keyframes losingSad {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(6px) rotate(1deg); }
+}
+
+.loser-message {
+  font-size: clamp(0.9rem, 1.5vw, 1.15rem);
+  color: #2d3436;
+  margin-top: 8px;
+  font-weight: bold;
+  font-style: italic;
+  background: rgba(255,255,255,0.8);
+  padding: 4px 10px;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.firework {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99;
+  box-shadow: 0 0 8px currentColor, 0 0 16px currentColor;
+}
+@keyframes fireworkBurst {
+  0%   { transform: translate(0, 0) scale(0); opacity: 0; }
+  10%  { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--fx), var(--fy)) scale(0.4); opacity: 0; }
+}
+
+.shake-text {
+  display: inline-block;
+  animation: shakeText 0.4s ease-in-out infinite;
+}
+@keyframes shakeText {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+.rainbow-text {
+  background: linear-gradient(90deg, #ff6b6b, #ffd700, #51cf66, #4dabf7, #a29bfe, #fd79a8, #ff6b6b);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rainbowShift 3s linear infinite;
+}
+@keyframes rainbowShift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+.victory-banner {
+  font-size: clamp(0.9rem, 2vw, 1.4rem);
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 3px 0 rgba(0,0,0,0.4);
+  margin: 6px 0 20px;
+  letter-spacing: 1px;
+}
+
+.winner-title {
+  font-size: clamp(2.2rem, 7vw, 5.5rem);
+  font-weight: 900;
+  color: white;
+  text-shadow:
+    -4px -4px 0 #d63031, 4px -4px 0 #d63031,
+    -4px  4px 0 #d63031, 4px  4px 0 #d63031,
+    0 10px 0 #b71540, 0 16px 40px rgba(0,0,0,0.4);
+  margin-bottom: 20px;
+  animation: winnerBounce 1.5s ease infinite;
+  text-align: center;
+}
+
+@keyframes winnerBounce {
+  0%, 100% { transform: scale(1) rotate(-2deg); }
+  50% { transform: scale(1.06) rotate(2deg); }
+}
+
+.new-record-banner {
+  background: linear-gradient(135deg, #ffd700, #ff6b00);
+  color: #1a202c;
+  padding: 12px 30px;
+  border-radius: 20px;
+  font-size: clamp(1.1rem, 2vw, 1.6rem);
+  font-weight: 900;
+  margin-bottom: 22px;
+  display: none;
+  border: 4px solid white;
+  animation: recordShake 0.6s;
+  text-shadow: 0 2px 4px rgba(255,255,255,0.5);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.new-record-banner.show { display: block; }
+
+@keyframes recordShake {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-3deg) scale(1.05); }
+  75% { transform: rotate(3deg) scale(1.05); }
+}
+
+.final-scores {
+  display: flex;
+  gap: 25px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.final-team {
+  background: white;
+  border-radius: 28px;
+  padding: 22px 35px;
+  min-width: 220px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.final-team.red { border: 8px solid #ff6b6b; }
+.final-team.blue { border: 8px solid #4dabf7; }
+
+.final-team h2 {
+  font-size: clamp(1.2rem, 2.3vw, 1.8rem);
+  margin-bottom: 10px;
+  color: #2d3436;
+}
+
+.final-team .score-num {
+  font-size: clamp(2.5rem, 5.5vw, 4rem);
+  font-weight: 900;
+  color: #2d3436;
+  line-height: 1;
+}
+
+.final-team .out-of {
+  color: #636e72;
+  font-weight: bold;
+  margin-top: 4px;
+  font-size: clamp(0.85rem, 1.4vw, 1rem);
+}
+
+.final-team .winner-crown {
+  font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+  margin-bottom: 6px;
+  animation: crownFloat 2s ease-in-out infinite;
+  display: block;
+  height: clamp(2.2rem, 4.5vw, 3.5rem);
+}
+
+@keyframes crownFloat {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-12px) rotate(5deg); }
+}
+
+.end-buttons {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.end-btn {
+  padding: 18px 32px;
+  font-size: clamp(1rem, 1.9vw, 1.4rem);
+  font-weight: 900;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  background: white;
+  color: #2d3436;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.25);
+  font-family: inherit;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.end-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.25); }
+.end-btn.primary { background: linear-gradient(135deg, #51cf66, #2f9e44); color: white; }
+
+.confetti {
+  position: fixed;
+  width: 12px;
+  height: 16px;
+  pointer-events: none;
+  animation: fall 3s linear forwards;
+  z-index: 100;
+}
+
+@keyframes fall {
+  0% { transform: translateY(0) rotate(0); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+.plus-one {
+  position: absolute;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 4px 0 #1a202c, 0 8px 20px rgba(0,0,0,0.6);
+  pointer-events: none;
+  animation: plusOneFloat 1.2s ease-out forwards;
+  z-index: 6;
+}
+.plus-two {
+  color: #ff9f43 !important;
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+}
+
+@keyframes plusOneFloat {
+  0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+  20% { transform: translate(-50%, -10px) scale(1.3); opacity: 1; }
+  100% { transform: translate(-50%, -120px) scale(1); opacity: 0; }
+}
+
+@media (max-width: 700px) {
+  .choices { grid-template-columns: 1fr 1fr; }
+  .question-text { font-size: clamp(1rem, 4.5vw, 1.7rem); }
+  .choice-btn { font-size: clamp(0.95rem, 3.5vw, 1.4rem); padding: 10px; min-height: 50px; }
+}
+
+@media (max-height: 600px) {
+  .track { height: 38px; }
+  .question-card { padding: 8px 14px; }
+  .choice-btn { min-height: 48px; padding: 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ======================== START SCREEN ======================== -->
+<div id="startScreen" class="screen active">
+  <div class="title-wrap">
+    <h1 class="title" id="titleAnim"></h1>
+    <div class="runners-deco">🏃‍♀️ 🏃‍♂️ 🏁 🏃‍♀️ 🏃‍♂️</div>
+    <p class="subtitle">🏆 Pick a Grade Level to Race! 🏆</p>
+  </div>
+
+  <div class="top-bar">
+    <button class="top-btn" onclick="openModal('teamsModal')">👥 Teams</button>
+    <button class="top-btn" onclick="openModal('settingsModal')">⚙️ Settings</button>
+    <button class="top-btn" onclick="openModal('scoresModal')">🏆 Records</button>
+  </div>
+
+  <div class="grade-grid">
+    <button class="grade-btn" data-grade="1"><span class="grade-emoji">🐣</span>Grade 1</button>
+    <button class="grade-btn" data-grade="2"><span class="grade-emoji">🐰</span>Grade 2</button>
+    <button class="grade-btn" data-grade="3"><span class="grade-emoji">🐢</span>Grade 3</button>
+    <button class="grade-btn" data-grade="4"><span class="grade-emoji">🦝</span>Grade 4</button>
+    <button class="grade-btn" data-grade="5"><span class="grade-emoji">🐝</span>Grade 5</button>
+    <button class="grade-btn" data-grade="6"><span class="grade-emoji">🦊</span>Grade 6</button>
+    <button class="grade-btn" data-grade="7"><span class="grade-emoji">🐯</span>Grade 7</button>
+    <button class="grade-btn" data-grade="8"><span class="grade-emoji">🦁</span>Grade 8</button>
+    <button class="grade-btn" data-grade="algebra1"><span class="grade-emoji">🐉</span>Algebra 1</button>
+    <button class="grade-btn" data-grade="mixed"><span class="grade-emoji">🎲</span>Mixed Grades</button>
+  </div>
+
+  <div class="how-to">
+    Line up in <strong>two teams</strong> at the smart board! Each player runs up, taps an answer, and tags in the next teammate. <strong>First team to win the race wins!</strong> 🏁
+  </div>
+</div>
+
+<!-- ======================== TEAM SETUP MODAL ======================== -->
+<div id="teamsModal" class="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('teamsModal')">✕</button>
+    <h2>👥 Customize Teams</h2>
+    <div class="team-row red">
+      <h3>🔥 Red Team</h3>
+      <input type="text" class="team-name-input" id="redName" maxlength="20" placeholder="Team name...">
+      <div class="mascot-picker" id="redMascots"></div>
+    </div>
+    <div class="team-row blue">
+      <h3>⚡ Blue Team</h3>
+      <input type="text" class="team-name-input" id="blueName" maxlength="20" placeholder="Team name...">
+      <div class="mascot-picker" id="blueMascots"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="resetTeams()">🔄 Reset</button>
+      <button class="modal-btn primary" onclick="saveTeams()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== SETTINGS MODAL ======================== -->
+<div id="settingsModal" class="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
+    <h2>⚙️ Settings</h2>
+
+    <div class="setting-row">
+      <div class="setting-label">📝 Number of Questions</div>
+      <div class="setting-options" data-setting="questions">
+        <button class="setting-opt" data-val="10">10 — Quick</button>
+        <button class="setting-opt" data-val="20">20 — Medium</button>
+        <button class="setting-opt" data-val="30">30 — Standard</button>
+        <button class="setting-opt" data-val="50">50 — Marathon</button>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">⏱️ Timer Per Question</div>
+      <div class="setting-options" data-setting="timer">
+        <button class="setting-opt" data-val="0">Off</button>
+        <button class="setting-opt" data-val="15">15 sec</button>
+        <button class="setting-opt" data-val="30">30 sec</button>
+        <button class="setting-opt" data-val="45">45 sec</button>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">⚡ Power-Ups (every 5 correct)</div>
+      <div class="setting-options" data-setting="powerUps">
+        <button class="setting-opt" data-val="true">On</button>
+        <button class="setting-opt" data-val="false">Off</button>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">🔊 Sound Effects</div>
+      <div class="setting-options" data-setting="sound">
+        <button class="setting-opt" data-val="true">On</button>
+        <button class="setting-opt" data-val="false">Off</button>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">🎵 Background Music</div>
+      <div class="setting-options" data-setting="music">
+        <button class="setting-opt" data-val="true">On</button>
+        <button class="setting-opt" data-val="false">Off</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="resetSettings()">🔄 Defaults</button>
+      <button class="modal-btn primary" onclick="closeModal('settingsModal')">✓ Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== HIGH SCORES MODAL ======================== -->
+<div id="scoresModal" class="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('scoresModal')">✕</button>
+    <h2>🏆 Hall of Fame</h2>
+    <div class="scores-grade-tabs" id="scoresTabs"></div>
+    <ul class="score-list" id="scoresList"></ul>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="clearScores()">🗑️ Clear All</button>
+      <button class="modal-btn primary" onclick="closeModal('scoresModal')">✓ Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== TOPIC SCREEN ======================== -->
+<div id="topicScreen" class="screen">
+  <div class="topic-header">
+    <button class="back-btn" onclick="showScreen('startScreen')">← Grades</button>
+    <h1 class="topic-title" id="topicTitle">Grade 5 — Pick a Topic</h1>
+    <span class="ny-badge">📘 NYS Next Gen Standards</span>
+  </div>
+  <div class="topic-content">
+    <button class="topic-card mixed" id="mixedTopicBtn">
+      <div class="topic-emoji">⭐</div>
+      <div class="topic-info">
+        <div class="topic-name">Mixed Review — All Topics</div>
+        <div class="topic-desc">Practice every topic in this grade level</div>
+      </div>
+    </button>
+    <div class="topic-grid" id="topicGrid"></div>
+  </div>
+</div>
+
+<!-- ======================== GAME SCREEN ======================== -->
+<div id="gameScreen" class="screen">
+  <div class="game-header">
+    <span class="title-mini">🏆 MATH RELAY 🏆</span>
+    <span class="grade-badge" id="gradeBadge">Grade 5</span>
+    <span class="q-counter" id="questionCount">0 / 30</span>
+    <button class="header-btn pause-btn" id="pauseBtn">⏸ Pause</button>
+    <button class="header-btn end-btn-header" onclick="confirmEnd()">⏹ End</button>
+  </div>
+
+  <div class="split">
+    <!-- RED TEAM -->
+    <div class="team-side red" id="sideRed">
+      <div class="team-header">
+        <span class="team-name"><span class="team-mascot" id="mascotRed">🔥</span> <span id="nameRed">RED TEAM</span></span>
+        <span class="score-display"><span id="scoreRed">0</span>/<span id="goalRed">30</span></span>
+      </div>
+      <div class="track">
+        <div class="track-finish">🏁</div>
+        <div class="track-fill" id="fillRed"></div>
+        <div class="track-runner" id="runnerRed">🏃‍♀️</div>
+      </div>
+      <div class="power-bar" id="powerBarRed"></div>
+      <div class="runner-info">⭐ <span id="runnerInfoRed">Player 1, GO!</span> ⭐</div>
+      <div class="timer-bar-wrap" id="timerWrapRed"><div class="timer-bar" id="timerBarRed"></div></div>
+      <div class="question-card">
+        <div class="visual-wrap" id="visualRed"></div>
+        <div class="question-text" id="questionRed">—</div>
+      </div>
+      <div class="solution-panel" id="solutionRed"><span class="label">💡 Solution:</span> <span id="solutionTextRed"></span></div>
+      <div class="choices" id="choicesRed"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- BLUE TEAM -->
+    <div class="team-side blue" id="sideBlue">
+      <div class="team-header">
+        <span class="team-name"><span class="team-mascot" id="mascotBlue">⚡</span> <span id="nameBlue">BLUE TEAM</span></span>
+        <span class="score-display"><span id="scoreBlue">0</span>/<span id="goalBlue">30</span></span>
+      </div>
+      <div class="track">
+        <div class="track-finish">🏁</div>
+        <div class="track-fill" id="fillBlue"></div>
+        <div class="track-runner" id="runnerBlue">🏃</div>
+      </div>
+      <div class="power-bar" id="powerBarBlue"></div>
+      <div class="runner-info">⭐ <span id="runnerInfoBlue">Player 1, GO!</span> ⭐</div>
+      <div class="timer-bar-wrap" id="timerWrapBlue"><div class="timer-bar" id="timerBarBlue"></div></div>
+      <div class="question-card">
+        <div class="visual-wrap" id="visualBlue"></div>
+        <div class="question-text" id="questionBlue">—</div>
+      </div>
+      <div class="solution-panel" id="solutionBlue"><span class="label">💡 Solution:</span> <span id="solutionTextBlue"></span></div>
+      <div class="choices" id="choicesBlue"></div>
+    </div>
+  </div>
+
+  <div class="pause-overlay" id="pauseOverlay">
+    <h2>⏸ PAUSED</h2>
+    <button onclick="togglePause()">▶ RESUME</button>
+  </div>
+</div>
+
+<!-- ======================== END SCREEN ======================== -->
+<div id="endScreen" class="screen">
+  <div class="victory-trophy" id="bgTrophy">🏆</div>
+  <div class="dancing-emoji" id="dance1" style="top:6%;left:6%">🎉</div>
+  <div class="dancing-emoji" id="dance2" style="top:8%;right:6%;animation-delay:0.3s">🎊</div>
+  <div class="dancing-emoji" id="dance3" style="bottom:18%;left:8%;animation-delay:0.6s">🥳</div>
+  <div class="dancing-emoji" id="dance4" style="bottom:14%;right:8%;animation-delay:0.9s">🎁</div>
+  <div class="dancing-emoji" id="dance5" style="top:50%;left:3%;animation-delay:0.45s">⭐</div>
+  <div class="dancing-emoji" id="dance6" style="top:48%;right:3%;animation-delay:0.75s">💫</div>
+
+  <div class="giant-mascot" id="giantMascot">🏆</div>
+  <h1 class="winner-title" id="winnerTitle"><span class="shake-text">🏆 RED TEAM WINS! 🏆</span></h1>
+  <div class="victory-banner rainbow-text" id="victoryBanner">CHAMPIONS OF THE RELAY!</div>
+  <div class="new-record-banner" id="newRecordBanner">⭐ NEW RECORD! ⭐</div>
+  <div class="final-scores">
+    <div class="final-team red" id="finalTeamRed">
+      <span class="winner-crown" id="crownRed"></span>
+      <h2 id="finalNameRed">🔥 RED TEAM</h2>
+      <div class="score-num" id="finalRed">0</div>
+      <div class="out-of" id="finalOutRed">out of 30</div>
+      <div class="loser-message" id="loserMsgRed" style="display:none"></div>
+    </div>
+    <div class="final-team blue" id="finalTeamBlue">
+      <span class="winner-crown" id="crownBlue"></span>
+      <h2 id="finalNameBlue">⚡ BLUE TEAM</h2>
+      <div class="score-num" id="finalBlue">0</div>
+      <div class="out-of" id="finalOutBlue">out of 30</div>
+      <div class="loser-message" id="loserMsgBlue" style="display:none"></div>
+    </div>
+  </div>
+  <div class="end-buttons">
+    <button class="end-btn primary" id="raceAgainBtn">🔄 Race Again</button>
+    <button class="end-btn" onclick="resetGame()">🏠 Main Menu</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script>
+/* ============================================================
+   UTILITIES
+============================================================ */
+function shuffle(arr) {
+  arr = [...arr];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pickFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a || 1; }
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function nearbyDistractors(answer, count) {
+  const set = new Set();
+  let attempts = 0;
+  while (set.size < count && attempts < 100) {
+    const offset = randInt(1, 9) * (Math.random() < 0.5 ? -1 : 1);
+    const d = answer + offset;
+    if (d !== answer) set.add(d);
+    attempts++;
+  }
+  return [...set];
+}
+
+function makeMC(text, answer, distractors, solution, visual) {
+  const opts = distractors ? [answer, ...distractors] : [answer, ...nearbyDistractors(typeof answer === 'number' ? answer : 0, 3)];
+  const unique = [];
+  const seen = new Set();
+  for (const o of opts) {
+    const s = String(o);
+    if (!seen.has(s)) { seen.add(s); unique.push(s); }
+  }
+  while (unique.length < 4) {
+    const baseN = typeof answer === 'number' ? answer : 0;
+    const candidate = String(baseN + randInt(-15, 15));
+    if (!seen.has(candidate)) { seen.add(candidate); unique.push(candidate); }
+  }
+  return {
+    text,
+    answer: String(answer),
+    choices: shuffle(unique.slice(0, 4)),
+    solution: solution || `The answer is ${answer}.`,
+    visual: visual || null
+  };
+}
+
+function renderMath(el) {
+  if (typeof renderMathInElement === 'function') {
+    try {
+      renderMathInElement(el, {
+        delimiters: [
+          { left: '$', right: '$', display: false }
+        ],
+        throwOnError: false,
+        strict: false
+      });
+    } catch (e) { /* silent */ }
+  }
+}
+
+/* ============================================================
+   VISUAL SVG HELPERS
+============================================================ */
+function rectSVG(l, w) {
+  const max = 200;
+  const scale = Math.min(max / Math.max(l, w), 12);
+  const W = l * scale, H = w * scale;
+  return `<svg viewBox="0 0 ${W + 60} ${H + 50}" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="20" width="${W}" height="${H}" fill="#74b9ff" stroke="#1a202c" stroke-width="3" rx="4"/>
+    <text x="${W/2 + 30}" y="${H + 42}" text-anchor="middle" font-weight="900" font-size="16" fill="#1a202c" font-family="sans-serif">${l}</text>
+    <text x="14" y="${H/2 + 26}" text-anchor="middle" font-weight="900" font-size="16" fill="#1a202c" font-family="sans-serif">${w}</text>
+  </svg>`;
+}
+
+function rightTriangleSVG(a, b, hideHyp) {
+  const max = 180;
+  const scale = Math.min(max / Math.max(a, b), 14);
+  const W = b * scale, H = a * scale;
+  return `<svg viewBox="0 0 ${W + 60} ${H + 50}" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="30,20 30,${H + 20} ${W + 30},${H + 20}" fill="#ff7675" stroke="#1a202c" stroke-width="3"/>
+    <rect x="30" y="${H + 5}" width="14" height="14" fill="none" stroke="#1a202c" stroke-width="2"/>
+    <text x="14" y="${H/2 + 26}" text-anchor="middle" font-weight="900" font-size="16" fill="#1a202c" font-family="sans-serif">${a}</text>
+    <text x="${W/2 + 30}" y="${H + 42}" text-anchor="middle" font-weight="900" font-size="16" fill="#1a202c" font-family="sans-serif">${b}</text>
+    ${hideHyp ? `<text x="${W/2 + 50}" y="${H/2 + 5}" font-weight="900" font-size="18" fill="#e74c3c" font-family="sans-serif">?</text>` : ''}
+  </svg>`;
+}
+
+function circleSVG(r) {
+  const scale = Math.min(80 / r, 12);
+  const R = r * scale;
+  return `<svg viewBox="0 0 ${R*2 + 40} ${R*2 + 40}" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="${R + 20}" cy="${R + 20}" r="${R}" fill="#a29bfe" stroke="#1a202c" stroke-width="3"/>
+    <line x1="${R + 20}" y1="${R + 20}" x2="${R*2 + 20}" y2="${R + 20}" stroke="#1a202c" stroke-width="2.5"/>
+    <circle cx="${R + 20}" cy="${R + 20}" r="3" fill="#1a202c"/>
+    <text x="${R*1.5 + 20}" y="${R + 12}" text-anchor="middle" font-weight="900" font-size="14" fill="#1a202c" font-family="sans-serif">r=${r}</text>
+  </svg>`;
+}
+
+function boxSVG(l, w, h) {
+  const scale = 7;
+  const W = l * scale, H = w * scale, D = h * scale * 0.5;
+  const x0 = 30, y0 = 30 + D;
+  return `<svg viewBox="0 0 ${W + D + 70} ${H + D + 60}" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="${x0},${y0} ${x0 + W},${y0} ${x0 + W + D},${y0 - D} ${x0 + D},${y0 - D}" fill="#55efc4" stroke="#1a202c" stroke-width="2.5"/>
+    <polygon points="${x0 + W},${y0} ${x0 + W + D},${y0 - D} ${x0 + W + D},${y0 + H - D} ${x0 + W},${y0 + H}" fill="#00cec9" stroke="#1a202c" stroke-width="2.5"/>
+    <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="#74b9ff" stroke="#1a202c" stroke-width="2.5"/>
+    <text x="${x0 + W/2}" y="${y0 + H + 22}" text-anchor="middle" font-weight="900" font-size="14" fill="#1a202c" font-family="sans-serif">l=${l}</text>
+    <text x="${x0 + W + D + 18}" y="${y0 + H/2}" text-anchor="middle" font-weight="900" font-size="14" fill="#1a202c" font-family="sans-serif">w=${w}</text>
+    <text x="${x0 + W/2 + D/2}" y="${y0 - D - 6}" text-anchor="middle" font-weight="900" font-size="14" fill="#1a202c" font-family="sans-serif">h=${h}</text>
+  </svg>`;
+}
+
+function lineGraphSVG(x1, y1, x2, y2) {
+  const cx = (v) => v * 12 + 90;
+  const cy = (v) => 90 - v * 12;
+  return `<svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+    <line x1="20" y1="90" x2="170" y2="90" stroke="#888" stroke-width="1"/>
+    <line x1="90" y1="20" x2="90" y2="160" stroke="#888" stroke-width="1"/>
+    ${[...Array(11).keys()].map(i => `<line x1="${30 + i*12}" y1="88" x2="${30 + i*12}" y2="92" stroke="#888"/>`).join('')}
+    ${[...Array(11).keys()].map(i => `<line x1="88" y1="${30 + i*12}" x2="92" y2="${30 + i*12}" stroke="#888"/>`).join('')}
+    <line x1="${cx(x1)}" y1="${cy(y1)}" x2="${cx(x2)}" y2="${cy(y2)}" stroke="#e74c3c" stroke-width="3"/>
+    <circle cx="${cx(x1)}" cy="${cy(y1)}" r="5" fill="#e74c3c"/>
+    <circle cx="${cx(x2)}" cy="${cy(y2)}" r="5" fill="#e74c3c"/>
+    <text x="${cx(x1) + 6}" y="${cy(y1) - 6}" font-weight="900" font-size="11" fill="#1a202c" font-family="sans-serif">(${x1},${y1})</text>
+    <text x="${cx(x2) + 6}" y="${cy(y2) - 6}" font-weight="900" font-size="11" fill="#1a202c" font-family="sans-serif">(${x2},${y2})</text>
+  </svg>`;
+}
+
+/* ============================================================
+   QUESTION GENERATORS — return { text, answer, choices, solution, visual? }
+============================================================ */
+const generators = {
+  /* ============= GRADE 1 ============= */
+  1: [
+    () => { const a = randInt(1, 9), b = randInt(1, 10 - a); return makeMC(`$${a} + ${b} = \\,?$`, a + b, null, `Count up from $${a}$: $${a} + ${b} = ${a+b}$.`); },
+    () => { const a = randInt(5, 14), b = randInt(2, 20 - a); return makeMC(`$${a} + ${b} = \\,?$`, a + b, null, `Add: $${a} + ${b} = ${a+b}$.`); },
+    () => { const a = randInt(4, 10), b = randInt(1, a - 1); return makeMC(`$${a} - ${b} = \\,?$`, a - b, null, `Take away: $${a} - ${b} = ${a-b}$.`); },
+    () => { const a = randInt(11, 20), b = randInt(2, a - 2); return makeMC(`$${a} - ${b} = \\,?$`, a - b, null, `Subtract: $${a} - ${b} = ${a-b}$.`); },
+    () => { const a = randInt(20, 99); return makeMC(`How many tens are in $${a}$?`, Math.floor(a/10), null, `$${a}$ has $${Math.floor(a/10)}$ tens and $${a%10}$ ones.`); },
+    () => { const a = randInt(20, 99); return makeMC(`What is the ones digit of $${a}$?`, a % 10, null, `The ones place is the rightmost digit: $${a%10}$.`); },
+    () => { const start = randInt(2, 8) * 2; return makeMC(`Skip count by 2: $${start}, ${start+2}, ${start+4}, \\,?$`, start + 6, null, `Add 2: $${start+4} + 2 = ${start+6}$.`); },
+    () => { const start = randInt(1, 6) * 5; return makeMC(`Skip count by 5: $${start}, ${start+5}, ${start+10}, \\,?$`, start + 15, null, `Add 5: $${start+10} + 5 = ${start+15}$.`); },
+    () => { const start = randInt(1, 6) * 10; return makeMC(`Skip count by 10: $${start}, ${start+10}, ${start+20}, \\,?$`, start + 30, null, `Add 10: $${start+20} + 10 = ${start+30}$.`); },
+    () => { const opts = [{q: 'How many sides does a triangle have?', a: 3}, {q: 'How many sides does a square have?', a: 4}, {q: 'How many sides does a rectangle have?', a: 4}, {q: 'How many sides does a hexagon have?', a: 6}, {q: 'How many corners (vertices) does a triangle have?', a: 3}, {q: 'How many corners does a square have?', a: 4}]; const o = pickFrom(opts); return makeMC(o.q, o.a, [o.a + 1, o.a - 1, o.a + 2], `Count the sides or corners — answer is $${o.a}$.`); },
+    () => { const a = randInt(2, 8), b = randInt(2, 8); return makeMC(`Sam has $${a}$ apples. He gets $${b}$ more. How many apples now?`, a + b, null, `Add: $${a} + ${b} = ${a+b}$ apples.`); },
+    () => { const a = randInt(8, 18), b = randInt(2, a - 3); return makeMC(`Mia has $${a}$ stickers. She gives $${b}$ away. How many are left?`, a - b, null, `Subtract: $${a} - ${b} = ${a-b}$ stickers.`); },
+    () => { const a = randInt(2, 9); return makeMC(`What is double $${a}$?`, a * 2, null, `Double means add a number to itself: $${a} + ${a} = ${a*2}$.`); },
+    () => { const a = randInt(2, 8), sum = a + randInt(2, 8); return makeMC(`$\\,?+${a}=${sum}$. What's the missing number?`, sum - a, null, `Subtract: $${sum} - ${a} = ${sum-a}$.`); }
+  ],
+  /* ============= GRADE 2 ============= */
+  2: [
+    () => { const a = randInt(15, 60), b = randInt(15, 99 - a); return makeMC(`$${a} + ${b} = \\,?$`, a + b, null, `Add tens then ones: $${a} + ${b} = ${a+b}$.`); },
+    () => { const a = randInt(40, 99), b = randInt(15, a - 10); return makeMC(`$${a} - ${b} = \\,?$`, a - b, null, `Subtract: $${a} - ${b} = ${a-b}$.`); },
+    () => { const a = randInt(100, 999); return makeMC(`What is the hundreds digit of $${a}$?`, Math.floor(a / 100), null, `The hundreds place: $${Math.floor(a/100)}$.`); },
+    () => { const a = randInt(100, 999); return makeMC(`What is the tens digit of $${a}$?`, Math.floor((a % 100) / 10), null, `The tens place: $${Math.floor((a%100)/10)}$.`); },
+    () => { const start = randInt(20, 50); return makeMC(`Skip count by 2: $${start}, ${start+2}, ${start+4}, ${start+6}, \\,?$`, start + 8, null, `Add 2.`); },
+    () => { const start = randInt(5, 18) * 5; return makeMC(`Skip count by 5: $${start}, ${start+5}, ${start+10}, \\,?$`, start + 15, null, `Add 5.`); },
+    () => { const start = randInt(1, 9) * 100; return makeMC(`What comes after $${start}$ when counting by 100?`, start + 100, null, `Add 100: $${start} + 100 = ${start+100}$.`); },
+    () => { const coins = [{q: 'How many cents in a quarter?', a: 25}, {q: 'How many cents in a dime?', a: 10}, {q: 'How many cents in a nickel?', a: 5}, {q: 'How many cents in a penny?', a: 1}, {q: 'How many cents in a half-dollar?', a: 50}]; const o = pickFrom(coins); return makeMC(o.q, o.a, null, `${o.q.replace('How many cents in ', '').replace('?', '')} = ${o.a} cents.`); },
+    () => { const q = randInt(1, 4), d = randInt(1, 5); const total = q*25 + d*10; return makeMC(`How much money? $${q}$ quarter${q>1?'s':''} and $${d}$ dime${d>1?'s':''}.`, `${total}¢`, [`${q*25 + d}¢`, `${q*5 + d*10}¢`, `${q*10 + d*25}¢`], `${q} × 25 + ${d} × 10 = ${total} cents.`); },
+    () => { const h = randInt(1, 12); const half = randInt(0, 1); return makeMC(`What time would the clock show: ${h} ${half ? 'thirty' : "o'clock"}?`, half === 0 ? `${h}:00` : `${h}:30`, [`${h}:${half ? '00' : '30'}`, `${h+1 > 12 ? 1 : h+1}:${half ? '30' : '00'}`, `${h-1 < 1 ? 12 : h-1}:${half ? '30' : '00'}`], `${h} ${half ? 'thirty = ' + h + ':30' : "o'clock = " + h + ':00'}.`); },
+    () => { const a = randInt(15, 40), b = randInt(10, 30); return makeMC(`Lily had $${a}$ books. She got $${b}$ more. How many now?`, a + b, null, `$${a} + ${b} = ${a+b}$ books.`); },
+    () => { const a = randInt(30, 80), b = randInt(10, a - 10); return makeMC(`There were $${a}$ kids. $${b}$ went home. How many are left?`, a - b, null, `$${a} - ${b} = ${a-b}$ kids.`); },
+    () => { const opts = [{q: 'How many sides does an octagon have?', a: 8}, {q: 'How many sides does a pentagon have?', a: 5}, {q: 'How many sides does a hexagon have?', a: 6}, {q: 'How many faces does a cube have?', a: 6}, {q: 'How many edges does a cube have?', a: 12}, {q: 'How many vertices does a cube have?', a: 8}]; const o = pickFrom(opts); return makeMC(o.q, o.a, [o.a + 1, o.a - 1, o.a + 2], `Answer: $${o.a}$.`); },
+    () => { const a = randInt(3, 9); return makeMC(`Double $${a}$ plus $1$ equals?`, a*2 + 1, null, `$${a} + ${a} + 1 = ${a*2+1}$.`); }
+  ],
+  /* ============= GRADE 3 ============= */
+  3: [
+    () => { const a = randInt(2, 10), b = randInt(2, 10); return makeMC(`$${a} \\times ${b} = \\,?$`, a * b, null, `$${a} \\times ${b} = ${a*b}$.`); },
+    () => { const b = randInt(2, 10), q = randInt(2, 10); return makeMC(`$${b * q} \\div ${b} = \\,?$`, q, null, `$${b*q} \\div ${b} = ${q}$.`); },
+    () => { const a = randInt(2, 9), b = randInt(2, 9); return makeMC(`$${a} \\times \\,? = ${a*b}$`, b, null, `Divide: $${a*b} \\div ${a} = ${b}$.`); },
+    () => { const a = randInt(100, 599), b = randInt(100, 400); return makeMC(`$${a} + ${b} = \\,?$`, a + b, null, `$${a} + ${b} = ${a+b}$.`); },
+    () => { const a = randInt(500, 999), b = randInt(100, 400); return makeMC(`$${a} - ${b} = \\,?$`, a - b, null, `$${a} - ${b} = ${a-b}$.`); },
+    () => { const d = pickFrom([2, 3, 4, 5, 6, 8]); const n = randInt(1, d - 1); return makeMC(`What fraction is $${n}$ shaded out of $${d}$ equal parts?`, `$\\frac{${n}}{${d}}$`, [`$\\frac{${d}}{${n}}$`, `$\\frac{${n+1}}{${d}}$`, `$\\frac{${n}}{${d+1}}$`], `Numerator over denominator: $\\frac{${n}}{${d}}$.`); },
+    () => { const d = randInt(2, 6); const k = randInt(2, 4); return makeMC(`Which fraction is equivalent to $\\frac{1}{${d}}$?`, `$\\frac{${k}}{${d*k}}$`, [`$\\frac{${k}}{${d}}$`, `$\\frac{${k+1}}{${d*k}}$`, `$\\frac{1}{${d+k}}$`], `Multiply numerator and denominator by $${k}$: $\\frac{1 \\cdot ${k}}{${d} \\cdot ${k}} = \\frac{${k}}{${d*k}}$.`); },
+    () => { const l = randInt(3, 9), w = randInt(2, 8); return makeMC(`What is the area of this rectangle?`, l * w, null, `Length × Width: $${l} \\times ${w} = ${l*w}$ square units.`, rectSVG(l, w)); },
+    () => { const l = randInt(3, 9), w = randInt(2, 7); return makeMC(`What is the perimeter of this rectangle?`, 2 * (l + w), null, `$2(${l} + ${w}) = ${2*(l+w)}$ units.`, rectSVG(l, w)); },
+    () => { const h1 = randInt(1, 9), gap = randInt(1, 4); return makeMC(`School starts at $${h1}$:00 and ends at $${h1+gap}$:00. How many hours?`, gap, null, `From ${h1}:00 to ${h1+gap}:00 is $${gap}$ hours.`); },
+    () => { const groups = randInt(3, 8), per = randInt(3, 8); return makeMC(`There are $${groups}$ groups with $${per}$ kids each. How many kids total?`, groups * per, null, `Multiply: $${groups} \\times ${per} = ${groups*per}$.`); },
+    () => { const groups = randInt(3, 6), per = randInt(3, 8); const total = groups * per; return makeMC(`$${total}$ candies shared with $${groups}$ kids. How many each?`, per, null, `Divide: $${total} \\div ${groups} = ${per}$.`); },
+    () => { const a = randInt(11, 99); const rounded = Math.round(a / 10) * 10; return makeMC(`Round $${a}$ to the nearest 10.`, rounded, null, `Ones digit is ${a%10}, ${a%10 >= 5 ? 'round up' : 'round down'} to $${rounded}$.`); },
+    () => { const a = randInt(150, 999); const rounded = Math.round(a / 100) * 100; return makeMC(`Round $${a}$ to the nearest 100.`, rounded, null, `Tens digit is ${Math.floor((a%100)/10)}, round to $${rounded}$.`); }
+  ],
+  /* ============= GRADE 4 ============= */
+  4: [
+    () => { const a = randInt(11, 99), b = randInt(2, 9); return makeMC(`$${a} \\times ${b} = \\,?$`, a * b, null, `$${a} \\times ${b} = ${a*b}$.`); },
+    () => { const b = randInt(2, 9), q = randInt(20, 99); return makeMC(`$${b * q} \\div ${b} = \\,?$`, q, null, `$${b*q} \\div ${b} = ${q}$.`); },
+    () => { const a = randInt(11, 25), b = randInt(11, 25); return makeMC(`$${a} \\times ${b} = \\,?$`, a * b, null, `Use the standard algorithm: $${a} \\times ${b} = ${a*b}$.`); },
+    () => { const n = pickFrom([12, 18, 20, 24, 30, 36]); const factors = []; for (let i = 1; i <= n; i++) if (n % i === 0) factors.push(i); return makeMC(`How many factors does $${n}$ have?`, factors.length, null, `Factors of $${n}$: ${factors.join(', ')} ($${factors.length}$ total).`); },
+    () => { const n = randInt(3, 9); return makeMC(`What is the 5th multiple of $${n}$?`, n * 5, null, `$${n} \\times 5 = ${n*5}$.`); },
+    () => { const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]; const composites = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24, 25]; const n = pickFrom([...primes, ...composites]); const isPrime = primes.includes(n); return makeMC(`Is $${n}$ prime or composite?`, isPrime ? 'Prime' : 'Composite', isPrime ? ['Composite', 'Even only', 'Both'] : ['Prime', 'Even only', 'Both'], `$${n}$ is ${isPrime ? 'prime — only divisible by 1 and itself' : 'composite — has more than 2 factors'}.`); },
+    () => { const a = randInt(2, 6), b = a + randInt(1, 4); const k = randInt(2, 4); return makeMC(`Which is equivalent to $\\frac{${a}}{${b}}$?`, `$\\frac{${a*k}}{${b*k}}$`, [`$\\frac{${a*k}}{${b}}$`, `$\\frac{${a}}{${b*k}}$`, `$\\frac{${a+k}}{${b+k}}$`], `Multiply top and bottom by $${k}$: $\\frac{${a} \\cdot ${k}}{${b} \\cdot ${k}} = \\frac{${a*k}}{${b*k}}$.`); },
+    () => { const d = randInt(4, 10); const n1 = randInt(1, d - 1); let n2; do { n2 = randInt(1, d - 1); } while (n1 === n2); return makeMC(`Which is greater: $\\frac{${n1}}{${d}}$ or $\\frac{${n2}}{${d}}$?`, n1 > n2 ? `$\\frac{${n1}}{${d}}$` : `$\\frac{${n2}}{${d}}$`, [`$\\frac{${Math.min(n1, n2)}}{${d}}$`, `They are equal`, `Cannot tell`], `Same denominator — compare numerators: $${Math.max(n1,n2)} > ${Math.min(n1,n2)}$.`); },
+    () => { const tenths = randInt(1, 9); return makeMC(`What is $0.${tenths}$ as a fraction?`, `$\\frac{${tenths}}{10}$`, [`$\\frac{${tenths}}{100}$`, `$\\frac{1}{${tenths}}$`, `$\\frac{10}{${tenths}}$`], `$0.${tenths} = ${tenths}$ tenths $= \\frac{${tenths}}{10}$.`); },
+    () => { const types = [{q: 'An angle of exactly 90° is called?', a: 'Right'}, {q: 'An angle less than 90° is called?', a: 'Acute'}, {q: 'An angle greater than 90° but less than 180° is called?', a: 'Obtuse'}, {q: 'An angle of 180° is called?', a: 'Straight'}]; const o = pickFrom(types); const distractors = ['Right', 'Acute', 'Obtuse', 'Straight'].filter(x => x !== o.a); return makeMC(o.q, o.a, distractors, `Answer: ${o.a} angle.`); },
+    () => { const start = randInt(2, 10); const step = randInt(2, 5); const seq = [start, start + step, start + step * 2, start + step * 3]; return makeMC(`What's next in the pattern? $${seq.join(', ')}, \\,?$`, start + step * 4, null, `Add $${step}$ each time: next = $${start + step*4}$.`); },
+    () => { const a = randInt(12, 25), b = randInt(3, 8); return makeMC(`A box holds $${a}$ books. How many books in $${b}$ boxes?`, a * b, null, `$${a} \\times ${b} = ${a*b}$ books.`); },
+    () => { const groups = randInt(2, 6), per = randInt(15, 30); const total = groups * per; return makeMC(`$${total}$ stickers in $${groups}$ packs. How many per pack?`, per, null, `Divide: $${total} \\div ${groups} = ${per}$.`); },
+    () => { const a = randInt(1500, 9999); const rounded = Math.round(a / 1000) * 1000; return makeMC(`Round $${a}$ to the nearest 1000.`, rounded, null, `Look at hundreds digit and round to $${rounded}$.`); }
+  ],
+  /* ============= GRADE 5 ============= */
+  5: [
+    () => { const a = randInt(12, 35), b = randInt(11, 25); const ans = a*b; return makeMC(`$${a} \\times ${b} = \\,?$`, ans, null, `$${a} \\times ${b} = ${ans}$`); },
+    () => { const b = randInt(3, 12), q = randInt(20, 80); return makeMC(`$${b*q} \\div ${b} = \\,?$`, q, null, `$${b*q} \\div ${b} = ${q}$ — divide each part: ${b} goes into ${b*q} exactly ${q} times.`); },
+    () => { const a = randInt(15, 99), b = randInt(15, 99); const ans = ((a + b)/10).toFixed(1); return makeMC(`$${(a/10).toFixed(1)} + ${(b/10).toFixed(1)} = \\,?$`, ans, [((a+b+1)/10).toFixed(1), ((a+b-1)/10).toFixed(1), ((a+b+10)/10).toFixed(1)], `Line up the decimals: ${(a/10).toFixed(1)} + ${(b/10).toFixed(1)} = ${ans}.`); },
+    () => { const a = randInt(50, 99), b = randInt(15, 49); const ans = ((a-b)/10).toFixed(1); return makeMC(`$${(a/10).toFixed(1)} - ${(b/10).toFixed(1)} = \\,?$`, ans, [((a-b+1)/10).toFixed(1), ((a-b-1)/10).toFixed(1), ((a+b)/10).toFixed(1)], `Subtract carefully: ${(a/10).toFixed(1)} − ${(b/10).toFixed(1)} = ${ans}.`); },
+    () => { const a = randInt(2, 9), b = randInt(2, 9), c = randInt(2, 9); return makeMC(`$${a} + ${b} \\times ${c} = \\,?$`, a + b*c, [(a+b)*c, a*b+c, a+b+c], `PEMDAS: do $${b} \\times ${c} = ${b*c}$ first, then add $${a}$ → $${a+b*c}$.`); },
+    () => { const l = randInt(6, 20), w = randInt(4, 15); return makeMC(`What is the area of this rectangle?`, l*w, null, `Area = length × width = $${l} \\times ${w} = ${l*w}$.`, rectSVG(l, w)); },
+    () => { const l = randInt(6, 18), w = randInt(4, 12); return makeMC(`What is the perimeter of this rectangle?`, 2*(l+w), null, `Perimeter = $2(l + w) = 2(${l} + ${w}) = ${2*(l+w)}$.`, rectSVG(l, w)); },
+    () => { const d = pickFrom([4, 5, 6, 8, 10, 12]); const n1 = randInt(1, Math.floor(d/2)); const n2 = randInt(1, Math.floor(d/2)); return makeMC(`$\\frac{${n1}}{${d}} + \\frac{${n2}}{${d}} = \\,?$`, `$\\frac{${n1+n2}}{${d}}$`, [`$\\frac{${n1+n2}}{${d*2}}$`, `$\\frac{${n1*n2}}{${d}}$`, `$\\frac{${n1+n2+1}}{${d}}$`], `Same denominator — add the numerators: $\\frac{${n1}+${n2}}{${d}} = \\frac{${n1+n2}}{${d}}$.`); },
+    () => { const p = pickFrom([10, 20, 25, 50]); const n = randInt(2, 20)*10; return makeMC(`$${p}\\%$ of $${n} = \\,?$`, n*p/100, null, `$${p}\\%$ means $\\frac{${p}}{100}$. So $${n} \\times \\frac{${p}}{100} = ${n*p/100}$.`); },
+    () => { const a = randInt(100, 999), b = randInt(100, 999); return makeMC(`$${a} + ${b} = \\,?$`, a+b, null, `Stack and add: $${a} + ${b} = ${a+b}$.`); },
+    () => { const a = randInt(500, 999), b = randInt(100, 499); return makeMC(`$${a} - ${b} = \\,?$`, a-b, null, `Stack and subtract: $${a} - ${b} = ${a-b}$.`); },
+    () => { const l = randInt(3, 8), w = randInt(3, 8), h = randInt(3, 8); return makeMC(`What is the volume of this box?`, l*w*h, null, `Volume = $l \\times w \\times h = ${l} \\times ${w} \\times ${h} = ${l*w*h}$.`, boxSVG(l, w, h)); },
+    /* word problems */
+    () => { const cookies = randInt(20, 60), eaten = randInt(5, 15); return makeMC(`Sarah has ${cookies} cookies. She eats ${eaten}. How many are left?`, cookies - eaten, null, `Subtract: $${cookies} - ${eaten} = ${cookies-eaten}$ cookies left.`); },
+    () => { const slices = pickFrom([8, 12, 16]), friends = randInt(2, 4); return makeMC(`A pizza has ${slices} slices. ${friends} friends share equally. How many slices each?`, slices / friends, null, `Divide: $${slices} \\div ${friends} = ${slices/friends}$ slices each.`); },
+    () => { const pages = randInt(20, 50), days = randInt(2, 5); return makeMC(`If Alex reads ${pages} pages in ${days} days at a steady rate, how many pages per day?`, pages / days, null, `Divide: $${pages} \\div ${days} = ${pages/days}$ pages per day.`); },
+  ],
+
+  /* ============= GRADE 6 ============= */
+  6: [
+    () => { let a, b; do { a = randInt(-10, 10); b = randInt(-10, 10); } while (a === 0 && b === 0); return makeMC(`$${a} + (${b}) = \\,?$`, a+b, null, `Combine signed numbers: $${a} + (${b}) = ${a+b}$.`); },
+    () => { const a = randInt(-15, 15), b = randInt(1, 12); return makeMC(`$${a} - ${b} = \\,?$`, a-b, null, `Subtract: $${a} - ${b} = ${a-b}$.`); },
+    () => { let a, b; do { a = randInt(-9, 9); b = randInt(-9, 9); } while (a === 0 || b === 0); return makeMC(`$${a} \\times (${b}) = \\,?$`, a*b, null, `${(a<0 && b<0) || (a>0 && b>0) ? 'Same' : 'Different'} signs → ${(a*b<0)?'negative':'positive'}: $${a} \\times (${b}) = ${a*b}$.`); },
+    () => { const x = randInt(2, 20), c = randInt(1, 30); return makeMC(`Solve: $x + ${c} = ${x+c}$`, x, null, `Subtract $${c}$ from both sides: $x = ${x+c} - ${c} = ${x}$.`); },
+    () => { const x = randInt(2, 15), m = randInt(2, 9); return makeMC(`Solve: $${m}x = ${m*x}$`, x, null, `Divide both sides by $${m}$: $x = ${m*x} \\div ${m} = ${x}$.`); },
+    () => { const a = randInt(2, 8), b = randInt(2, 8), k = randInt(2, 5); return makeMC(`Ratio of cats to dogs is $${a}:${b}$. If there are ${a*k} cats, how many dogs?`, b*k, null, `Multiply each part by $${k}$: $${a} \\times ${k} = ${a*k}$ cats and $${b} \\times ${k} = ${b*k}$ dogs.`); },
+    () => { const p = pickFrom([15, 20, 25, 30, 40, 60, 75]); const n = randInt(2, 10)*20; return makeMC(`$${p}\\%$ of $${n} = \\,?$`, n*p/100, null, `$${n} \\times \\frac{${p}}{100} = ${n*p/100}$.`); },
+    () => { const r = randInt(2, 12); return makeMC(`Area of this circle? (Use $\\pi = 3$)`, 3*r*r, null, `$A = \\pi r^2 = 3 \\times ${r}^2 = 3 \\times ${r*r} = ${3*r*r}$.`, circleSVG(r)); },
+    () => { const a = randInt(2, 12), b = randInt(2, 8); return makeMC(`GCF of $${a*b}$ and $${a*(b+1)}$?`, a, [a*b, a+b, a*2], `Both numbers share a factor of $${a}$. The greatest common factor is $${a}$.`); },
+    () => { let a, b; do { a = randInt(2, 8); b = randInt(3, 9); } while (a === b); const lcm = (a*b)/gcd(a,b); return makeMC(`LCM of $${a}$ and $${b}$?`, lcm, null, `LCM = $\\frac{${a} \\times ${b}}{\\text{GCF}} = \\frac{${a*b}}{${gcd(a,b)}} = ${lcm}$.`); },
+    () => { const x = randInt(2, 15), c = randInt(1, 20); return makeMC(`Solve: $x - ${c} = ${x-c}$`, x, null, `Add $${c}$ to both sides: $x = ${x-c} + ${c} = ${x}$.`); },
+    () => { const a = randInt(20, 80); return makeMC(`What is $${a}\\%$ of $200$?`, a*2, null, `$${a}\\%$ of $200 = ${a} \\times 2 = ${a*2}$.`); },
+    /* word problems */
+    () => { const total = randInt(40, 80), pct = pickFrom([20, 25, 50]); return makeMC(`A store has $${total}$ items. $${pct}\\%$ are on sale. How many are on sale?`, total*pct/100, null, `$${pct}\\%$ of $${total} = ${total*pct/100}$ items.`); },
+    () => { const games = randInt(4, 8), avg = randInt(8, 20); const total = games * avg; return makeMC(`Mike scored $${total}$ points in $${games}$ games. What is his average per game?`, avg, null, `Average $= \\frac{${total}}{${games}} = ${avg}$.`); },
+  ],
+
+  /* ============= GRADE 7 ============= */
+  7: [
+    () => { const x = randInt(2, 15), m = randInt(2, 8), c = randInt(1, 20); return makeMC(`Solve: $${m}x + ${c} = ${m*x+c}$`, x, null, `Subtract $${c}$: $${m}x = ${m*x}$. Divide by $${m}$: $x = ${x}$.`); },
+    () => { const x = randInt(2, 15), m = randInt(2, 8), c = randInt(1, 20); return makeMC(`Solve: $${m}x - ${c} = ${m*x-c}$`, x, null, `Add $${c}$: $${m}x = ${m*x}$. Divide by $${m}$: $x = ${x}$.`); },
+    () => { const a = randInt(-12, -1), b = randInt(-12, -1); return makeMC(`$(${a}) \\times (${b}) = \\,?$`, a*b, null, `Two negatives make a positive: $(${a}) \\times (${b}) = ${a*b}$.`); },
+    () => { let a, b; do { a = randInt(-20, -2); b = randInt(2, 9); } while (a % b !== 0); return makeMC(`$${a} \\div ${b} = \\,?$`, a/b, null, `Negative ÷ positive = negative: $${a} \\div ${b} = ${a/b}$.`); },
+    () => { const p = pickFrom([10, 15, 20, 25, 30, 50]); const n = randInt(5, 20)*10; const ans = n + n*p/100; return makeMC(`$${n}$ increased by $${p}\\%$ = ?`, ans, null, `Increase = $${n} \\times \\frac{${p}}{100} = ${n*p/100}$. New total = $${n} + ${n*p/100} = ${ans}$.`); },
+    () => { const p = pickFrom([10, 20, 25, 30, 50]); const n = randInt(5, 20)*10; const ans = n - n*p/100; return makeMC(`$${n}$ decreased by $${p}\\%$ = ?`, ans, null, `Decrease = $${n} \\times \\frac{${p}}{100} = ${n*p/100}$. New total = $${n} - ${n*p/100} = ${ans}$.`); },
+    () => { const a = randInt(2, 8), b = randInt(2, 8), k = randInt(2, 5); return makeMC(`Solve: $\\frac{${a}}{${b}} = \\frac{x}{${b*k}}$`, a*k, null, `Cross-multiply: $${a} \\times ${b*k} = ${b} \\times x$, so $x = ${a*k}$.`); },
+    () => { let m, x, c; do { x = randInt(-8, 8); m = randInt(-5, 5); c = randInt(-15, 15); } while (m === 0); return makeMC(`Evaluate $${m}x + ${c}$ when $x = ${x}$`, m*x + c, null, `Substitute: $${m}(${x}) + ${c} = ${m*x} + ${c} = ${m*x+c}$.`); },
+    () => { const a = randInt(2, 8), b = randInt(2, 8); return makeMC(`Two dice: a $${a}$-sided and a $${b}$-sided. How many possible outcomes?`, a*b, null, `Multiply: $${a} \\times ${b} = ${a*b}$ total combinations.`); },
+    () => { const l = randInt(4, 12), w = randInt(3, 10), h = randInt(2, 8); return makeMC(`Volume of this box?`, l*w*h, null, `$V = l \\times w \\times h = ${l} \\times ${w} \\times ${h} = ${l*w*h}$.`, boxSVG(l, w, h)); },
+    () => { let n; do { n = randInt(-15, 15); } while (n === 0); return makeMC(`What is $|${n}|$?`, Math.abs(n), null, `Absolute value strips the sign: $|${n}| = ${Math.abs(n)}$.`); },
+    () => { const a = randInt(-12, -1), b = randInt(1, 12); return makeMC(`$${a} - (${b}) = \\,?$`, a-b, null, `Subtracting a positive: $${a} - (${b}) = ${a-b}$.`); },
+    /* word problems */
+    () => { const price = randInt(20, 80), pct = pickFrom([10, 20, 25, 30]); const sale = price - price*pct/100; return makeMC(`A shirt costs $\\$${price}$ and is $${pct}\\%$ off. What is the sale price?`, `$\\$${sale}$`, [`$\\$${price - pct}$`, `$\\$${price + price*pct/100}$`, `$\\$${price*pct/100}$`], `Discount = $${price} \\times \\frac{${pct}}{100} = ${price*pct/100}$. Sale price = $${price} - ${price*pct/100} = ${sale}$.`); },
+    () => { const total = randInt(20, 50), girls = Math.floor(total * 3 / 5); return makeMC(`If $\\frac{3}{5}$ of a class are girls and there are $${total*5/Math.max(1,gcd(total,5))*Math.max(1,gcd(total,5))}$ students... Actually: a class has $${5*Math.floor(total/5)}$ students. $\\frac{3}{5}$ are girls. How many?`, 3 * Math.floor(total/5), null, `$\\frac{3}{5} \\times ${5*Math.floor(total/5)} = ${3*Math.floor(total/5)}$ girls.`); },
+  ],
+
+  /* ============= GRADE 8 ============= */
+  8: [
+    () => {
+      let x, a, b, c, d, attempts = 0;
+      do {
+        x = randInt(2, 12); a = randInt(2, 8); b = randInt(2, 8); c = randInt(1, 15); d = randInt(1, 15);
+        attempts++;
+      } while ((a === b || (b*x + d - c)/a !== x) && attempts < 30);
+      if (attempts >= 30) { x = 5; a = 3; b = 1; c = 4; d = 12; }
+      return makeMC(`Solve: $${a}x + ${c} = ${b}x + ${d}$`, x, null, `Move $x$ terms together: $(${a}-${b})x = ${d}-${c}$, so $${a-b}x = ${d-c}$, $x = ${x}$.`);
+    },
+    () => { const a = randInt(2, 12); return makeMC(`What is $${a}^2$?`, a*a, null, `$${a}^2 = ${a} \\times ${a} = ${a*a}$.`); },
+    () => { const a = randInt(2, 15); return makeMC(`What is $\\sqrt{${a*a}}$?`, a, null, `$\\sqrt{${a*a}} = ${a}$ because $${a}^2 = ${a*a}$.`); },
+    () => { const a = randInt(2, 5), b = randInt(2, 4); return makeMC(`$${a}^{${b}} = \\,?$`, Math.pow(a, b), null, `$${a}^{${b}} = ${Array(b).fill(a).join(' \\times ')} = ${Math.pow(a,b)}$.`); },
+    () => {
+      const triples = [[3,4,5],[5,12,13],[6,8,10],[8,15,17],[9,12,15],[7,24,25]];
+      const [a, b, c] = pickFrom(triples);
+      return makeMC(`Find the hypotenuse of this right triangle.`, c, null, `Pythagorean: $a^2 + b^2 = c^2$ → $${a}^2 + ${b}^2 = ${a*a+b*b}$. So $c = \\sqrt{${a*a+b*b}} = ${c}$.`, rightTriangleSVG(a, b, true));
+    },
+    () => {
+      let x1, y1, x2, y2, slope, attempts = 0;
+      do {
+        x1 = randInt(-5, 5); y1 = randInt(-5, 5);
+        x2 = randInt(-5, 5); y2 = randInt(-5, 5);
+        if (x1 !== x2) slope = (y2 - y1) / (x2 - x1);
+        attempts++;
+      } while ((x1 === x2 || !Number.isInteger(slope)) && attempts < 30);
+      if (attempts >= 30) { x1 = 0; y1 = 0; x2 = 1; y2 = 2; slope = 2; }
+      return makeMC(`What is the slope of this line?`, slope, null, `Slope $= \\frac{y_2-y_1}{x_2-x_1} = \\frac{${y2}-${y1}}{${x2}-${x1}} = \\frac{${y2-y1}}{${x2-x1}} = ${slope}$.`, lineGraphSVG(x1, y1, x2, y2));
+    },
+    () => { let m, b, x; do { m = randInt(-5, 5); b = randInt(-10, 10); x = randInt(-5, 5); } while (m === 0); return makeMC(`If $y = ${m}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}$, find $y$ when $x = ${x}$.`, m*x + b, null, `Substitute: $y = ${m}(${x}) ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${m*x} ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${m*x+b}$.`); },
+    () => { const x = randInt(2, 12), a = randInt(2, 8), c = randInt(1, 20); return makeMC(`Solve: $${a}(x - ${c}) = ${a*(x-c)}$`, x, null, `Divide by $${a}$: $x - ${c} = ${x-c}$. Add $${c}$: $x = ${x}$.`); },
+    () => { const a = randInt(2, 9); return makeMC(`Express $${a*1000}$ in scientific notation.`, `$${a} \\times 10^{3}$`, [`$${a} \\times 10^{2}$`, `$${a} \\times 10^{4}$`, `$${a*10} \\times 10^{2}$`], `$${a*1000} = ${a} \\times 1000 = ${a} \\times 10^3$.`); },
+    () => { const a = randInt(2, 12); return makeMC(`What is $${a}^3$?`, a*a*a, null, `$${a}^3 = ${a} \\times ${a} \\times ${a} = ${a*a*a}$.`); },
+    () => { const a = randInt(2, 9); return makeMC(`Simplify: $\\sqrt{${a*a}} + \\sqrt{${(a+1)*(a+1)}}$`, a + (a+1), null, `$\\sqrt{${a*a}} = ${a}$ and $\\sqrt{${(a+1)*(a+1)}} = ${a+1}$. Sum = $${a + a + 1}$.`); },
+    /* word problems */
+    () => { const l = pickFrom([3,4,5,6,7,8,9]), w = ({3:4,4:3,5:12,6:8,7:24,8:6,9:12})[l] || 4; const d = Math.sqrt(l*l + w*w); return makeMC(`A garden is $${l}$ ft by $${w}$ ft. What is the diagonal length?`, d, null, `Diagonal $= \\sqrt{${l}^2 + ${w}^2} = \\sqrt{${l*l + w*w}} = ${d}$ ft.`); },
+    () => { const a = randInt(2, 9); return makeMC(`Light travels $$3 \\times 10^8$$ m/s. How far in $${a}$ seconds?`, `$${3*a} \\times 10^{8}$`, [`$${a*3} \\times 10^{7}$`, `$${a+3} \\times 10^{8}$`, `$${3*a*10} \\times 10^{7}$`], `Multiply: $3 \\times 10^8 \\times ${a} = ${3*a} \\times 10^8$ m.`); },
+  ],
+
+  /* ============= ALGEBRA 1 ============= */
+  algebra1: [
+    () => {
+      let x, a, b, c, d, attempts = 0;
+      do {
+        x = randInt(2, 15); a = randInt(2, 9); b = randInt(2, 9); c = randInt(1, 20); d = randInt(1, 20);
+        attempts++;
+      } while ((a === b || ((d-c) % (a-b) !== 0)) && attempts < 30);
+      if (attempts >= 30) { x = 5; a = 4; b = 2; c = 3; d = 13; }
+      return makeMC(`Solve: $${a}x + ${c} = ${b}x + ${d}$`, (d-c)/(a-b), null, `Subtract $${b}x$ and $${c}$: $${a-b}x = ${d-c}$. Divide: $x = ${(d-c)/(a-b)}$.`);
+    },
+    () => {
+      const a = randInt(2, 8), b = randInt(2, 8);
+      const sum = a + b, prod = a * b;
+      return makeMC(`Factor: $x^2 + ${sum}x + ${prod}$`, `$(x+${a})(x+${b})$`, [`$(x+${a+1})(x+${b})$`, `$(x-${a})(x-${b})$`, `$(x+${prod})(x+1)$`], `Find two numbers that multiply to $${prod}$ and add to $${sum}$: those are $${a}$ and $${b}$.`);
+    },
+    () => { const a = randInt(2, 10); return makeMC(`Solve $x^2 = ${a*a}$ (positive solution)`, a, null, `Take the positive square root: $x = \\sqrt{${a*a}} = ${a}$.`); },
+    () => { let m, b; do { m = randInt(-6, 6); b = randInt(-12, 12); } while (m === 0); return makeMC(`Slope of $y = ${m}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}$?`, m, null, `In $y = mx + b$, the slope is $m = ${m}$.`); },
+    () => {
+      const x = randInt(2, 8), y = randInt(2, 8), a = randInt(2, 6), b = randInt(2, 6);
+      const c1 = a*x + b*y, c2 = a*x - b*y;
+      return makeMC(`System: $${a}x + ${b}y = ${c1}$, $${a}x - ${b}y = ${c2}$. Find $x$.`, x, null, `Add equations: $${2*a}x = ${c1+c2}$, so $x = ${x}$.`);
+    },
+    () => { const a = randInt(2, 5), b = randInt(2, 5); return makeMC(`Expand: $(x + ${a})(x + ${b})$`, `$x^2+${a+b}x+${a*b}$`, [`$x^2+${a*b}x+${a+b}$`, `$x^2+${a+b}x+${a+b}$`, `$x^2+${a*b}x+${a*b}$`], `FOIL: $x^2 + ${a}x + ${b}x + ${a*b} = x^2 + ${a+b}x + ${a*b}$.`); },
+    () => { const target = randInt(15, 40); const c = randInt(2, 8); const a = randInt(2, 5); const ans = Math.ceil((target - c + 1) / a); return makeMC(`Smallest integer $x$ where $${a}x + ${c} > ${target}$?`, ans, null, `$${a}x > ${target-c}$, so $x > ${(target-c)/a}$. Smallest integer: $${ans}$.`); },
+    () => { const a = randInt(2, 9); return makeMC(`Solve: $x^2 - ${a*a} = 0$ (positive solution)`, a, null, `$x^2 = ${a*a}$, so $x = \\sqrt{${a*a}} = ${a}$.`); },
+    () => { const a = randInt(2, 12); return makeMC(`Simplify: $\\sqrt{${a*a}}$`, a, null, `$\\sqrt{${a*a}} = ${a}$.`); },
+    () => { const a = randInt(2, 8), b = randInt(2, 8); return makeMC(`Expand: $(x - ${a})(x + ${b})$`, `$x^2+${b-a}x-${a*b}$`, [`$x^2+${a-b}x-${a*b}$`, `$x^2-${b-a}x+${a*b}$`, `$x^2+${b-a}x+${a*b}$`], `FOIL: $x^2 + ${b}x - ${a}x - ${a*b} = x^2 + ${b-a}x - ${a*b}$.`); },
+    () => { const m = randInt(2, 8), x = randInt(2, 9), b = randInt(1, 10); return makeMC(`Line $y = ${m}x + ${b}$. Find $y$ when $x = ${x}$.`, m*x + b, null, `Substitute: $y = ${m}(${x}) + ${b} = ${m*x+b}$.`); },
+    () => { const a = randInt(2, 6), b = randInt(2, 6); return makeMC(`Simplify: $(${a}x)(${b}x)$`, `$${a*b}x^2$`, [`$${a+b}x^2$`, `$${a*b}x$`, `$${a+b}x$`], `Multiply coefficients and add exponents: $${a} \\cdot ${b} = ${a*b}$, $x \\cdot x = x^2$.`); },
+    /* word problems */
+    () => { const x = randInt(3, 12); return makeMC(`Twice a number plus $7$ equals $${2*x + 7}$. What is the number?`, x, null, `$2x + 7 = ${2*x+7}$, so $2x = ${2*x}$, $x = ${x}$.`); },
+    () => { const len = randInt(4, 9), per = 4*len + 8; return makeMC(`A square's perimeter equals a pentagon's perimeter. The pentagon has side length $\\frac{${4*len+8}}{5}$. What is the square's side length?`, len + 2, null, `Perimeter $= ${per}$. Square side = $\\frac{${per}}{4} = ${(per)/4}$.`); },
+  ]
+};
+
+/* ============================================================
+   GAME STATE
+============================================================ */
+const teamRunners = {
+  red: ['🏃‍♀️', '🏃‍♂️', '🦸‍♀️', '🦸‍♂️', '🤸‍♀️', '🚴‍♀️', '🤾‍♀️', '🏋️‍♀️', '🦹‍♀️'],
+  blue: ['🏃', '🤸‍♂️', '🦸‍♂️', '🚴‍♂️', '🤾‍♂️', '🏃‍♀️', '🦸‍♀️', '🏋️‍♂️', '🦹‍♂️']
+};
+
+const MASCOT_OPTIONS = ['🔥', '⚡', '🐯', '🦁', '🐉', '🦊', '🐺', '🦅', '🦈', '🐢', '🐝', '🚀', '⭐', '🌟', '💎', '🌈', '🦄', '🐱', '🐶', '🐼'];
+
+/* ============================================================
+   NYS NEXT GENERATION STANDARDS — Topic mapping
+   Each topic lists indexes into generators[grade] that match it.
+============================================================ */
+const topicMeta = {
+  '1': [
+    { id: 'add-20', label: 'Addition within 20', emoji: '➕', desc: 'Add numbers up to 20', standard: 'NY-1.OA', gens: [0, 1, 12] },
+    { id: 'sub-20', label: 'Subtraction within 20', emoji: '➖', desc: 'Subtract numbers up to 20', standard: 'NY-1.OA', gens: [2, 3, 13] },
+    { id: 'place-value', label: 'Place Value', emoji: '🔢', desc: 'Tens and ones in two-digit numbers', standard: 'NY-1.NBT', gens: [4, 5] },
+    { id: 'skip-count', label: 'Skip Counting', emoji: '🦘', desc: 'Count by 2s, 5s, and 10s', standard: 'NY-1.NBT', gens: [6, 7, 8] },
+    { id: 'shapes', label: 'Shapes', emoji: '🔺', desc: 'Identify and describe shapes', standard: 'NY-1.G', gens: [9] },
+    { id: 'word-problems', label: 'Word Problems', emoji: '📖', desc: 'Real-world add and subtract', standard: 'NY-1.OA', gens: [10, 11] }
+  ],
+  '2': [
+    { id: 'add-100', label: 'Add within 100', emoji: '➕', desc: 'Add 2-digit numbers', standard: 'NY-2.NBT', gens: [0, 13] },
+    { id: 'sub-100', label: 'Subtract within 100', emoji: '➖', desc: 'Subtract 2-digit numbers', standard: 'NY-2.NBT', gens: [1] },
+    { id: 'place-value', label: 'Place Value', emoji: '🔢', desc: 'Hundreds, tens, and ones', standard: 'NY-2.NBT', gens: [2, 3] },
+    { id: 'skip-count', label: 'Skip Counting', emoji: '🦘', desc: 'Count by 2s, 5s, 10s, 100s', standard: 'NY-2.NBT', gens: [4, 5, 6] },
+    { id: 'money', label: 'Money', emoji: '💰', desc: 'Coins and dollar amounts', standard: 'NY-2.MD', gens: [7, 8] },
+    { id: 'time', label: 'Time', emoji: '🕐', desc: 'Reading clocks', standard: 'NY-2.MD', gens: [9] },
+    { id: 'shapes', label: 'Shapes', emoji: '🔺', desc: 'Identifying 2D and 3D shapes', standard: 'NY-2.G', gens: [12] },
+    { id: 'word-problems', label: 'Word Problems', emoji: '📖', desc: 'Real-world problems', standard: 'NY-2.OA', gens: [10, 11] }
+  ],
+  '3': [
+    { id: 'multiplication', label: 'Multiplication', emoji: '✖️', desc: 'Multiplication facts and missing factors', standard: 'NY-3.OA', gens: [0, 2] },
+    { id: 'division', label: 'Division', emoji: '➗', desc: 'Division facts within 100', standard: 'NY-3.OA', gens: [1] },
+    { id: 'add-sub-1000', label: 'Add & Subtract within 1000', emoji: '🔢', desc: 'Multi-digit addition and subtraction', standard: 'NY-3.NBT', gens: [3, 4] },
+    { id: 'fractions', label: 'Fractions', emoji: '🍰', desc: 'Understanding fractions', standard: 'NY-3.NF', gens: [5, 6] },
+    { id: 'area-perimeter', label: 'Area & Perimeter', emoji: '📐', desc: 'Area and perimeter of rectangles', standard: 'NY-3.MD', gens: [7, 8] },
+    { id: 'time', label: 'Time', emoji: '🕐', desc: 'Elapsed time and intervals', standard: 'NY-3.MD', gens: [9] },
+    { id: 'rounding', label: 'Rounding', emoji: '🔁', desc: 'Round to nearest 10 and 100', standard: 'NY-3.NBT', gens: [12, 13] },
+    { id: 'word-problems', label: 'Word Problems', emoji: '📖', desc: 'Multiplication and division problems', standard: 'NY-3.OA', gens: [10, 11] }
+  ],
+  '4': [
+    { id: 'multi-digit-mult', label: 'Multi-Digit Multiplication', emoji: '✖️', desc: 'Multiply 2 and 3 digit numbers', standard: 'NY-4.NBT', gens: [0, 2] },
+    { id: 'long-division', label: 'Long Division', emoji: '➗', desc: 'Divide multi-digit numbers', standard: 'NY-4.NBT', gens: [1] },
+    { id: 'factors-multiples', label: 'Factors & Multiples', emoji: '🔢', desc: 'Find factors, multiples, primes', standard: 'NY-4.OA', gens: [3, 4, 5] },
+    { id: 'fractions', label: 'Fractions', emoji: '🍰', desc: 'Equivalent and comparing fractions', standard: 'NY-4.NF', gens: [6, 7] },
+    { id: 'decimals', label: 'Decimals', emoji: '🔢', desc: 'Decimal–fraction equivalence', standard: 'NY-4.NF', gens: [8] },
+    { id: 'angles', label: 'Angles', emoji: '📐', desc: 'Acute, right, obtuse, straight angles', standard: 'NY-4.MD', gens: [9] },
+    { id: 'patterns', label: 'Patterns', emoji: '🔁', desc: 'Number patterns and rules', standard: 'NY-4.OA', gens: [10] },
+    { id: 'rounding', label: 'Rounding', emoji: '🔁', desc: 'Round multi-digit numbers', standard: 'NY-4.NBT', gens: [13] },
+    { id: 'word-problems', label: 'Word Problems', emoji: '📖', desc: 'Multi-step problems', standard: 'NY-4.OA', gens: [11, 12] }
+  ],
+  '5': [
+    { id: 'multi-digit', label: 'Multi-Digit Operations', emoji: '✖️', desc: 'Multiplication, division, and multi-digit arithmetic', standard: 'NY-5.NBT', gens: [0, 1, 9, 10] },
+    { id: 'decimal-ops', label: 'Decimal Operations', emoji: '🔢', desc: 'Add and subtract decimals to hundredths', standard: 'NY-5.NBT', gens: [2, 3] },
+    { id: 'fractions', label: 'Fractions', emoji: '🍰', desc: 'Add and subtract fractions', standard: 'NY-5.NF', gens: [7] },
+    { id: 'order-ops', label: 'Order of Operations', emoji: '🔣', desc: 'Evaluate expressions using PEMDAS', standard: 'NY-5.OA', gens: [4] },
+    { id: 'area-perimeter', label: 'Area & Perimeter', emoji: '📐', desc: 'Area and perimeter of rectangles', standard: 'NY-5.MD', gens: [5, 6] },
+    { id: 'volume', label: 'Volume', emoji: '📦', desc: 'Volume of rectangular prisms', standard: 'NY-5.MD', gens: [11] },
+    { id: 'percent', label: 'Percentages', emoji: '💯', desc: 'Find percentages of whole numbers', standard: 'NY-5.NF', gens: [8] },
+    { id: 'word-problems', label: 'Word Problems', emoji: '📖', desc: 'Real-world multi-step problems', standard: 'NY-5.OA', gens: [12, 13, 14] }
+  ],
+  '6': [
+    { id: 'integers', label: 'Integer Operations', emoji: '➖', desc: 'Add, subtract, multiply with negatives', standard: 'NY-6.NS', gens: [0, 1, 2] },
+    { id: 'equations', label: 'One-Step Equations', emoji: '🔣', desc: 'Solve simple equations for x', standard: 'NY-6.EE', gens: [3, 4, 10] },
+    { id: 'ratios', label: 'Ratios & Rates', emoji: '⚖️', desc: 'Understand and use ratio relationships', standard: 'NY-6.RP', gens: [5] },
+    { id: 'percent', label: 'Percentages', emoji: '💯', desc: 'Find percent of a quantity', standard: 'NY-6.RP', gens: [6, 11] },
+    { id: 'gcf-lcm', label: 'GCF & LCM', emoji: '🔢', desc: 'Greatest common factor and least common multiple', standard: 'NY-6.NS', gens: [8, 9] },
+    { id: 'geometry', label: 'Geometry', emoji: '📐', desc: 'Area, surface area, and volume', standard: 'NY-6.G', gens: [7] },
+    { id: 'word-problems', label: 'Word Problems', emoji: '📖', desc: 'Real-world ratio and percent problems', standard: 'NY-6.RP', gens: [12, 13] }
+  ],
+  '7': [
+    { id: 'rationals', label: 'Operations with Rationals', emoji: '➖', desc: 'Multiply, divide, and absolute value with rationals', standard: 'NY-7.NS', gens: [2, 3, 10, 11] },
+    { id: 'two-step', label: 'Two-Step Equations', emoji: '🔣', desc: 'Solve equations with two operations', standard: 'NY-7.EE', gens: [0, 1, 7] },
+    { id: 'proportional', label: 'Proportional Relationships', emoji: '⚖️', desc: 'Solve proportions and scaling problems', standard: 'NY-7.RP', gens: [6] },
+    { id: 'percent-app', label: 'Percent Applications', emoji: '💯', desc: 'Percent increase, decrease, and discounts', standard: 'NY-7.RP', gens: [4, 5] },
+    { id: 'volume', label: 'Volume', emoji: '📦', desc: 'Volume of three-dimensional figures', standard: 'NY-7.G', gens: [9] },
+    { id: 'probability', label: 'Probability', emoji: '🎲', desc: 'Sample spaces and outcomes', standard: 'NY-7.SP', gens: [8] },
+    { id: 'word-problems', label: 'Word Problems', emoji: '📖', desc: 'Multi-step real-world problems', standard: 'NY-7.EE', gens: [12, 13] }
+  ],
+  '8': [
+    { id: 'exponents', label: 'Exponents & Roots', emoji: '√', desc: 'Squares, cubes, and square roots', standard: 'NY-8.EE', gens: [1, 2, 3, 9, 10] },
+    { id: 'linear-eq', label: 'Multi-Step Equations', emoji: '🔣', desc: 'Linear equations with variables on both sides', standard: 'NY-8.EE', gens: [0, 7] },
+    { id: 'sci-notation', label: 'Scientific Notation', emoji: '🔬', desc: 'Express and operate with scientific notation', standard: 'NY-8.EE', gens: [8, 12] },
+    { id: 'functions', label: 'Linear Functions', emoji: '📈', desc: 'Evaluate and interpret y = mx + b', standard: 'NY-8.F', gens: [6] },
+    { id: 'slope', label: 'Slope', emoji: '📐', desc: 'Slope from points and equations', standard: 'NY-8.F', gens: [5] },
+    { id: 'pythagorean', label: 'Pythagorean Theorem', emoji: '📏', desc: 'Find missing sides of right triangles', standard: 'NY-8.G', gens: [4, 11] }
+  ],
+  'algebra1': [
+    { id: 'linear-eq', label: 'Linear Equations', emoji: '🔣', desc: 'Solve multi-step linear equations', standard: 'NY-A.REI', gens: [0, 10] },
+    { id: 'inequalities', label: 'Inequalities', emoji: '⚖️', desc: 'Solve and interpret linear inequalities', standard: 'NY-A.REI', gens: [6] },
+    { id: 'slope-int', label: 'Slope-Intercept Form', emoji: '📈', desc: 'Identify slope and y-intercept', standard: 'NY-A.REI', gens: [3, 10] },
+    { id: 'systems', label: 'Systems of Equations', emoji: '⚙️', desc: 'Solve systems by substitution and elimination', standard: 'NY-A.REI', gens: [4] },
+    { id: 'polynomials', label: 'Polynomials', emoji: '🔠', desc: 'Multiply and expand binomials', standard: 'NY-A.APR', gens: [5, 9, 11] },
+    { id: 'factoring', label: 'Factoring Quadratics', emoji: '✂️', desc: 'Factor trinomials of the form x² + bx + c', standard: 'NY-A.SSE', gens: [1] },
+    { id: 'quadratics', label: 'Solving Quadratics', emoji: '📊', desc: 'Solve quadratic equations', standard: 'NY-A.REI', gens: [2, 7] },
+    { id: 'roots', label: 'Roots & Radicals', emoji: '√', desc: 'Simplify radical expressions', standard: 'NY-N.RN', gens: [8] },
+    { id: 'word-problems', label: 'Word Problems', emoji: '📖', desc: 'Real-world algebraic modeling', standard: 'NY-A.CED', gens: [12, 13] }
+  ]
+};
+
+const defaultSettings = {
+  questions: 30,
+  timer: 0,
+  showSolutions: true,
+  powerUps: true,
+  sound: true,
+  music: false
+};
+
+const defaultTeams = {
+  red: { name: 'RED TEAM', mascot: '🔥' },
+  blue: { name: 'BLUE TEAM', mascot: '⚡' }
+};
+
+let settings = loadSettings();
+let teamConfig = loadTeams();
+let currentGrade = '5';
+let currentTopic = 'mixed';
+let gameOver = false;
+let isPaused = false;
+
+let teams = {
+  red: makeFreshTeam(),
+  blue: makeFreshTeam()
+};
+
+function makeFreshTeam() {
+  return {
+    score: 0,
+    runnerIdx: 0,
+    questions: [],
+    current: 0,
+    streak: 0,
+    powerUps: { fiftyFifty: 0, skip: 0, boost: 0 },
+    boostActive: false,
+    timer: null,
+    lastPowerUpAtScore: 0,
+    eliminated: new Set(),
+    locked: false,
+    answeredOnCurrent: false
+  };
+}
+
+/* ============================================================
+   PERSISTENCE
+============================================================ */
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('mathRelay_settings') || '{}');
+    return { ...defaultSettings, ...s };
+  } catch (e) { return { ...defaultSettings }; }
+}
+function saveSettingsToStorage() {
+  try { localStorage.setItem('mathRelay_settings', JSON.stringify(settings)); } catch (e) {}
+}
+function loadTeams() {
+  try {
+    const t = JSON.parse(localStorage.getItem('mathRelay_teams') || '{}');
+    return { red: { ...defaultTeams.red, ...(t.red || {}) }, blue: { ...defaultTeams.blue, ...(t.blue || {}) } };
+  } catch (e) { return JSON.parse(JSON.stringify(defaultTeams)); }
+}
+function saveTeamsToStorage() {
+  try { localStorage.setItem('mathRelay_teams', JSON.stringify(teamConfig)); } catch (e) {}
+}
+
+function recordScore(grade, score, won, teamName) {
+  try {
+    const all = JSON.parse(localStorage.getItem('mathRelay_scores') || '{}');
+    if (!all[grade]) all[grade] = [];
+    const entry = {
+      score,
+      teamName,
+      won,
+      questions: settings.questions,
+      timer: settings.timer,
+      date: new Date().toLocaleDateString()
+    };
+    all[grade].push(entry);
+    all[grade].sort((a, b) => b.score - a.score || (a.timer - b.timer));
+    all[grade] = all[grade].slice(0, 10);
+    localStorage.setItem('mathRelay_scores', JSON.stringify(all));
+    return all[grade].indexOf(entry) === 0; // true if new top score
+  } catch (e) { return false; }
+}
+function getHighScores(grade) {
+  try {
+    const all = JSON.parse(localStorage.getItem('mathRelay_scores') || '{}');
+    return all[grade] || [];
+  } catch (e) { return []; }
+}
+function clearScores() {
+  if (!confirm('Clear all high scores? This cannot be undone.')) return;
+  localStorage.removeItem('mathRelay_scores');
+  renderHighScores(currentScoresTab || '5');
+}
+
+/* ============================================================
+   AUDIO
+============================================================ */
+let audioCtx = null;
+let musicTimer = null;
+
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function tone(freq, dur, type = 'sine', vol = 0.25, delay = 0) {
+  if (!audioCtx) return;
+  const t0 = audioCtx.currentTime + delay;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  gain.gain.setValueAtTime(0, t0);
+  gain.gain.linearRampToValueAtTime(vol, t0 + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(t0);
+  osc.stop(t0 + dur + 0.05);
+}
+
+function playCorrect() {
+  if (!settings.sound) return;
+  ensureAudio(); if (!audioCtx) return;
+  tone(523, 0.1, 'square', 0.2, 0);
+  tone(659, 0.1, 'square', 0.2, 0.08);
+  tone(784, 0.18, 'square', 0.2, 0.16);
+}
+function playWrong() {
+  if (!settings.sound) return;
+  ensureAudio(); if (!audioCtx) return;
+  tone(220, 0.15, 'sawtooth', 0.18, 0);
+  tone(165, 0.22, 'sawtooth', 0.18, 0.1);
+}
+function playStreak() {
+  if (!settings.sound) return;
+  ensureAudio(); if (!audioCtx) return;
+  tone(659, 0.08, 'square', 0.18, 0);
+  tone(784, 0.08, 'square', 0.18, 0.06);
+  tone(988, 0.08, 'square', 0.18, 0.12);
+  tone(1318, 0.18, 'square', 0.18, 0.18);
+}
+function playWin() {
+  if (!settings.sound) return;
+  ensureAudio(); if (!audioCtx) return;
+  const notes = [523, 659, 784, 1047, 988, 1047, 1319];
+  notes.forEach((n, i) => tone(n, 0.22, 'square', 0.22, i * 0.13));
+}
+function playClick() {
+  if (!settings.sound) return;
+  ensureAudio(); if (!audioCtx) return;
+  tone(800, 0.04, 'square', 0.1);
+}
+function playPowerUp() {
+  if (!settings.sound) return;
+  ensureAudio(); if (!audioCtx) return;
+  tone(440, 0.1, 'square', 0.18, 0);
+  tone(554, 0.1, 'square', 0.18, 0.06);
+  tone(659, 0.1, 'square', 0.18, 0.12);
+  tone(880, 0.2, 'square', 0.2, 0.18);
+}
+
+function startMusic() {
+  if (!settings.music) return;
+  ensureAudio();
+  if (!audioCtx) return;
+  stopMusic();
+  scheduleMusicLoop();
+}
+function stopMusic() { if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; } }
+function padTone(freq, dur, vol, delay) {
+  if (!audioCtx) return;
+  const t0 = audioCtx.currentTime + delay;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq, t0);
+  gain.gain.setValueAtTime(0, t0);
+  gain.gain.linearRampToValueAtTime(vol, t0 + dur * 0.4);   // slow attack
+  gain.gain.linearRampToValueAtTime(vol * 0.7, t0 + dur * 0.7); // gentle sustain
+  gain.gain.linearRampToValueAtTime(0, t0 + dur);            // slow release
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(t0);
+  osc.stop(t0 + dur + 0.05);
+}
+
+function scheduleMusicLoop() {
+  if (!settings.music || !audioCtx || isPaused) {
+    if (settings.music && isPaused) musicTimer = setTimeout(scheduleMusicLoop, 500);
+    return;
+  }
+  // Slow, peaceful chord pad — I-vi-IV-V in C major
+  const chordDur = 3.0;
+  const chords = [
+    [261.63, 329.63, 392.00],  // C major
+    [220.00, 261.63, 329.63],  // A minor
+    [174.61, 220.00, 261.63],  // F major
+    [196.00, 246.94, 293.66]   // G major
+  ];
+  let t = 0;
+  chords.forEach((chord) => {
+    chord.forEach(note => padTone(note, chordDur * 0.96, 0.018, t));
+    padTone(chord[0] / 2, chordDur * 0.96, 0.022, t); // soft sub-bass
+    // Sparse bell shimmer on top of last chord
+    if (Math.random() < 0.3) {
+      padTone(chord[2] * 2, chordDur * 0.5, 0.012, t + chordDur * 0.3);
+    }
+    t += chordDur;
+  });
+  musicTimer = setTimeout(scheduleMusicLoop, t * 1000);
+}
+
+/* ============================================================
+   GAME LOGIC
+============================================================ */
+function getGensForTopic(grade, topic) {
+  if (grade === 'mixed') {
+    // Across all grades, all topics
+    const allGrades = ['1', '2', '3', '4', '5', '6', '7', '8', 'algebra1'];
+    return allGrades.flatMap(g => generators[g] || []);
+  }
+  const gradeGens = generators[grade] || [];
+  if (!topic || topic === 'mixed') return gradeGens;
+  const meta = (topicMeta[grade] || []).find(t => t.id === topic);
+  if (!meta) return gradeGens;
+  const filtered = meta.gens.map(i => gradeGens[i]).filter(Boolean);
+  return filtered.length ? filtered : gradeGens;
+}
+
+function generateQuestions(grade, topic) {
+  const total = settings.questions;
+  const questions = [];
+  const gens = getGensForTopic(grade, topic);
+  for (let i = 0; i < total; i++) {
+    let q = null, attempts = 0;
+    while (!q && attempts < 8) {
+      try { q = gens[randInt(0, gens.length - 1)](); } catch (e) { q = null; }
+      attempts++;
+    }
+    questions.push(q || { text: '$1 + 1 = ?$', answer: '2', choices: ['1', '2', '3', '4'], solution: '$1 + 1 = 2$' });
+  }
+  return questions;
+}
+
+function startGame(grade, topic) {
+  currentGrade = grade;
+  currentTopic = topic || 'mixed';
+  gameOver = false;
+  isPaused = false;
+  document.getElementById('pauseOverlay').classList.remove('active');
+
+  const gradeLabels = { '1': 'Grade 1', '2': 'Grade 2', '3': 'Grade 3', '4': 'Grade 4', '5': 'Grade 5', '6': 'Grade 6', '7': 'Grade 7', '8': 'Grade 8', algebra1: 'Algebra 1', mixed: 'Mixed Grades' };
+  let badge = gradeLabels[grade] || grade;
+  if (grade !== 'mixed' && currentTopic && currentTopic !== 'mixed') {
+    const tm = (topicMeta[grade] || []).find(t => t.id === currentTopic);
+    if (tm) badge += ` • ${tm.label}`;
+  } else if (grade !== 'mixed' && currentTopic === 'mixed') {
+    badge += ' • Mixed';
+  }
+  document.getElementById('gradeBadge').textContent = badge;
+
+  teams.red = makeFreshTeam();
+  teams.blue = makeFreshTeam();
+  teams.red.questions = generateQuestions(grade, currentTopic);
+  teams.blue.questions = generateQuestions(grade, currentTopic);
+
+  // Apply team customization
+  document.getElementById('mascotRed').textContent = teamConfig.red.mascot;
+  document.getElementById('nameRed').textContent = teamConfig.red.name;
+  document.getElementById('mascotBlue').textContent = teamConfig.blue.mascot;
+  document.getElementById('nameBlue').textContent = teamConfig.blue.name;
+
+  document.getElementById('goalRed').textContent = settings.questions;
+  document.getElementById('goalBlue').textContent = settings.questions;
+
+  // Show/hide timer bars
+  const timerActive = settings.timer > 0;
+  document.getElementById('timerWrapRed').classList.toggle('active', timerActive);
+  document.getElementById('timerWrapBlue').classList.toggle('active', timerActive);
+
+  showScreen('gameScreen');
+  renderPowerUps('red');
+  renderPowerUps('blue');
+  renderTeam('red');
+  renderTeam('blue');
+  updateUI();
+  ensureAudio();
+  startMusic();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showTopicScreen(grade) {
+  currentGrade = grade;
+  const gradeLabels = { '1': 'Grade 1', '2': 'Grade 2', '3': 'Grade 3', '4': 'Grade 4', '5': 'Grade 5', '6': 'Grade 6', '7': 'Grade 7', '8': 'Grade 8', algebra1: 'Algebra 1' };
+  document.getElementById('topicTitle').textContent = `${gradeLabels[grade] || grade} — Pick a Topic`;
+
+  const grid = document.getElementById('topicGrid');
+  grid.innerHTML = '';
+  const topics = topicMeta[grade] || [];
+  topics.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'topic-card';
+    btn.innerHTML = `
+      <div class="topic-emoji">${t.emoji}</div>
+      <div class="topic-info">
+        <div class="topic-name">${t.label}</div>
+        <div class="topic-desc">${t.desc}</div>
+        <div class="topic-standard">${t.standard}</div>
+      </div>
+    `;
+    btn.addEventListener('click', () => { playClick(); startGame(grade, t.id); });
+    grid.appendChild(btn);
+  });
+
+  const mixedBtn = document.getElementById('mixedTopicBtn');
+  mixedBtn.onclick = () => { playClick(); startGame(grade, 'mixed'); };
+
+  showScreen('topicScreen');
+}
+
+function renderTeam(team) {
+  const t = teams[team];
+  if (t.score >= settings.questions) return;
+  const q = t.questions[t.current];
+  t.eliminated = new Set();
+  t.answeredOnCurrent = false;
+
+  // Question text + visual
+  const qEl = document.getElementById(`question${cap(team)}`);
+  qEl.textContent = q.text;
+  renderMath(qEl);
+
+  const visEl = document.getElementById(`visual${cap(team)}`);
+  visEl.innerHTML = q.visual || '';
+
+  // Solution panel hidden by default
+  document.getElementById(`solution${cap(team)}`).classList.remove('show');
+
+  // Choices
+  const choicesDiv = document.getElementById(`choices${cap(team)}`);
+  choicesDiv.innerHTML = '';
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.idx = i;
+    btn.dataset.choice = c;
+    btn.type = 'button';
+    btn.textContent = c;
+    renderMath(btn);
+    btn.addEventListener('click', () => handleChoice(team, c, btn));
+    choicesDiv.appendChild(btn);
+  });
+
+  t.locked = false;
+
+  // Runner
+  const runners = teamRunners[team];
+  document.getElementById(`runner${cap(team)}`).textContent = runners[t.runnerIdx % runners.length];
+  document.getElementById(`runnerInfo${cap(team)}`).textContent = `Player ${t.runnerIdx + 1}, GO!`;
+
+  // Reset and start timer
+  if (settings.timer > 0) {
+    t.timer = { duration: settings.timer * 1000, elapsed: 0, lastTick: Date.now(), expired: false };
+    const bar = document.getElementById(`timerBar${cap(team)}`);
+    bar.style.width = '100%';
+    bar.classList.remove('warn');
+    requestAnimationFrame(() => tickTimer(team));
+  } else {
+    t.timer = null;
+  }
+}
+
+function tickTimer(team) {
+  const t = teams[team];
+  if (!t.timer || t.timer.expired) return;
+  if (gameOver) return;
+
+  if (!isPaused) {
+    const now = Date.now();
+    t.timer.elapsed += now - t.timer.lastTick;
+    t.timer.lastTick = now;
+    const remaining = t.timer.duration - t.timer.elapsed;
+    const pct = Math.max(0, remaining / t.timer.duration * 100);
+    const bar = document.getElementById(`timerBar${cap(team)}`);
+    bar.style.width = pct + '%';
+    if (pct < 33) bar.classList.add('warn');
+
+    if (remaining <= 0) {
+      t.timer.expired = true;
+      onTimerExpired(team);
+      return;
+    }
+  } else {
+    t.timer.lastTick = Date.now();
+  }
+  requestAnimationFrame(() => tickTimer(team));
+}
+
+function onTimerExpired(team) {
+  const t = teams[team];
+  if (t.score >= settings.questions || gameOver) return;
+  if (t.answeredOnCurrent) return;
+
+  t.locked = true;
+  t.answeredOnCurrent = true;
+  const q = t.questions[t.current];
+
+  // Disable all choices and highlight the correct one
+  document.querySelectorAll(`#choices${cap(team)} .choice-btn`).forEach(b => {
+    b.disabled = true;
+    if (b.dataset.choice === String(q.answer)) b.classList.add('correct');
+  });
+  playWrong();
+  showSolution(team); // ALWAYS
+
+  t.streak = 0;
+  document.getElementById(`side${cap(team)}`).classList.add('flash-wrong');
+  setTimeout(() => document.getElementById(`side${cap(team)}`).classList.remove('flash-wrong'), 500);
+
+  // Advance to next question (no point)
+  setTimeout(() => {
+    t.runnerIdx++;
+    t.current = (t.current + 1) % t.questions.length;
+    if (t.current === 0 && t.score < settings.questions) {
+      t.questions = t.questions.concat(generateQuestions(currentGrade, currentTopic));
+    }
+    renderPowerUps(team);
+    showTagIn(team, () => renderTeam(team));
+  }, 4000);
+}
+
+function showSolution(team) {
+  const t = teams[team];
+  const q = t.questions[t.current];
+  const panel = document.getElementById(`solution${cap(team)}`);
+  const txt = document.getElementById(`solutionText${cap(team)}`);
+  txt.textContent = q.solution;
+  renderMath(txt);
+  panel.classList.add('show');
+}
+
+function handleChoice(team, choice, btn) {
+  if (gameOver || isPaused) return;
+  const t = teams[team];
+  if (t.locked || t.answeredOnCurrent) return;        // ANTI-SPAM
+  if (t.score >= settings.questions) return;
+  if (btn.disabled) return;
+
+  // Lock immediately — block all further clicks for this question
+  t.locked = true;
+  t.answeredOnCurrent = true;
+  playClick();
+
+  const q = t.questions[t.current];
+  const isCorrect = String(choice) === String(q.answer);
+  const allBtns = document.querySelectorAll(`#choices${cap(team)} .choice-btn`);
+  // Hard-disable every button so spamming can't sneak in another answer
+  allBtns.forEach(b => b.disabled = true);
+  if (t.timer) t.timer.expired = true;
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    playCorrect();
+
+    const points = t.boostActive ? 2 : 1;
+    t.score = Math.min(settings.questions, t.score + points);
+    t.boostActive = false;
+    t.streak++;
+    t.runnerIdx++;
+    confettiBurst(team);
+    floatPlusOne(team, points);
+    if (t.streak >= 3) {
+      showStreak(team, t.streak);
+      playStreak();
+    }
+    document.getElementById(`side${cap(team)}`).classList.add('flash-correct');
+    setTimeout(() => document.getElementById(`side${cap(team)}`).classList.remove('flash-correct'), 600);
+
+    // Award power-ups (correct only — fair gating)
+    if (settings.powerUps && t.score >= t.lastPowerUpAtScore + 5) {
+      const types = ['fiftyFifty', 'skip', 'boost'];
+      const idx = Math.floor((t.score) / 5 - 1) % types.length;
+      const type = types[idx >= 0 ? idx : 0];
+      t.powerUps[type]++;
+      t.lastPowerUpAtScore = Math.floor(t.score / 5) * 5;
+      setTimeout(() => { showPowerUpEarned(team, type); playPowerUp(); }, 600);
+    }
+
+    setTimeout(() => {
+      updateUI();
+      renderPowerUps(team);
+      if (t.score >= settings.questions) {
+        endGame();
+      } else {
+        t.current = (t.current + 1) % t.questions.length;
+        if (t.current === 0) t.questions = t.questions.concat(generateQuestions(currentGrade, currentTopic));
+        showTagIn(team, () => renderTeam(team));
+      }
+    }, 750);
+  } else {
+    // WRONG: no points, no retry. Highlight correct answer, show worked solution, advance.
+    btn.classList.add('wrong');
+    allBtns.forEach(b => {
+      if (b.dataset.choice === String(q.answer)) b.classList.add('correct');
+    });
+    playWrong();
+    t.streak = 0;
+    document.getElementById(`side${cap(team)}`).classList.add('flash-wrong');
+    setTimeout(() => document.getElementById(`side${cap(team)}`).classList.remove('flash-wrong'), 500);
+
+    showSolution(team); // ALWAYS show on wrong
+
+    setTimeout(() => {
+      t.runnerIdx++; // tag in next runner even on miss
+      t.current = (t.current + 1) % t.questions.length;
+      if (t.current === 0) t.questions = t.questions.concat(generateQuestions(currentGrade, currentTopic));
+      renderPowerUps(team);
+      showTagIn(team, () => renderTeam(team));
+    }, 4000); // long enough for kids to read the solution
+  }
+}
+
+function updateUI() {
+  ['red', 'blue'].forEach(team => {
+    const t = teams[team];
+    document.getElementById(`score${cap(team)}`).textContent = t.score;
+    const pct = (t.score / settings.questions) * 100;
+    document.getElementById(`fill${cap(team)}`).style.width = pct + '%';
+    document.getElementById(`runner${cap(team)}`).style.left = Math.min(pct, 95) + '%';
+  });
+  const total = teams.red.score + teams.blue.score;
+  document.getElementById('questionCount').textContent = `${total} / ${settings.questions * 2}`;
+}
+
+/* ============================================================
+   POWER-UPS
+============================================================ */
+const POWER_INFO = {
+  fiftyFifty: { icon: '⚖️', label: '50/50', desc: 'Removes 2 wrong choices' },
+  skip: { icon: '⏭️', label: 'Skip', desc: 'Skip this question (counts as correct)' },
+  boost: { icon: '⚡', label: '2x Boost', desc: 'Next correct answer = 2 points!' }
+};
+
+function renderPowerUps(team) {
+  if (!settings.powerUps) return;
+  const t = teams[team];
+  const bar = document.getElementById(`powerBar${cap(team)}`);
+  bar.innerHTML = '';
+  Object.keys(POWER_INFO).forEach(type => {
+    const info = POWER_INFO[type];
+    const count = t.powerUps[type];
+    const btn = document.createElement('button');
+    btn.className = 'power-btn';
+    if (type === 'boost' && t.boostActive) btn.classList.add('boost-active');
+    btn.title = info.desc;
+    btn.innerHTML = `<span class="pw-icon">${info.icon}</span><span class="pw-count">${count}</span>`;
+    btn.disabled = count === 0;
+    btn.addEventListener('click', () => usePowerUp(team, type));
+    bar.appendChild(btn);
+  });
+}
+
+function usePowerUp(team, type) {
+  if (gameOver || isPaused) return;
+  const t = teams[team];
+  if (t.locked || t.answeredOnCurrent) return;       // ANTI-SPAM: block during transitions
+  if (t.powerUps[type] <= 0) return;
+  if (t.score >= settings.questions) return;
+  playPowerUp();
+
+  if (type === 'fiftyFifty') {
+    const q = t.questions[t.current];
+    const wrongIdxs = q.choices.map((c, i) => ({ c, i })).filter(x => x.c !== q.answer && !t.eliminated.has(String(x.i)));
+    const toRemove = shuffle(wrongIdxs).slice(0, 2);
+    toRemove.forEach(({ i }) => {
+      const btn = document.querySelector(`#choices${cap(team)} .choice-btn[data-idx="${i}"]`);
+      if (btn) {
+        btn.classList.add('eliminated');
+        btn.disabled = true;
+        t.eliminated.add(String(i));
+      }
+    });
+    t.powerUps[type]--;
+  } else if (type === 'skip') {
+    t.powerUps[type]--;
+    // Treat as correct
+    t.locked = true;
+    t.answeredOnCurrent = true;
+    t.score = Math.min(settings.questions, t.score + 1);
+    t.runnerIdx++;
+    confettiBurst(team);
+    floatPlusOne(team, 1);
+    document.querySelectorAll(`#choices${cap(team)} .choice-btn`).forEach(b => b.disabled = true);
+    if (t.timer) t.timer.expired = true;
+    setTimeout(() => {
+      updateUI();
+      renderPowerUps(team);
+      if (t.score >= settings.questions) {
+        endGame();
+      } else {
+        t.current = (t.current + 1) % t.questions.length;
+        if (t.current === 0) t.questions = t.questions.concat(generateQuestions(currentGrade, currentTopic));
+        showTagIn(team, () => renderTeam(team));
+      }
+    }, 600);
+    return;
+  } else if (type === 'boost') {
+    t.powerUps[type]--;
+    t.boostActive = true;
+  }
+  renderPowerUps(team);
+}
+
+function showPowerUpEarned(team, type) {
+  const info = POWER_INFO[type];
+  const side = document.getElementById(`side${cap(team)}`);
+  const badge = document.createElement('div');
+  badge.className = 'streak-badge';
+  badge.style.background = 'linear-gradient(135deg, #a29bfe, #6c5ce7)';
+  badge.style.color = 'white';
+  badge.textContent = `${info.icon} POWER-UP: ${info.label}!`;
+  side.appendChild(badge);
+  setTimeout(() => badge.remove(), 1500);
+}
+
+/* ============================================================
+   ANIMATIONS
+============================================================ */
+function showTagIn(team, cb) {
+  const side = document.getElementById(`side${cap(team)}`);
+  const t = teams[team];
+  const tag = document.createElement('div');
+  tag.className = 'tag-in';
+  const runners = teamRunners[team];
+  tag.innerHTML = `
+    <div class="runner-emoji">${runners[t.runnerIdx % runners.length]}</div>
+    <div class="tag-text">PLAYER ${t.runnerIdx + 1} — TAG IN!</div>
+  `;
+  side.appendChild(tag);
+  setTimeout(() => { tag.remove(); cb && cb(); }, 1050);
+}
+
+function showStreak(team, streak) {
+  const side = document.getElementById(`side${cap(team)}`);
+  const badge = document.createElement('div');
+  badge.className = 'streak-badge';
+  let label = `🔥 ${streak} STREAK!`;
+  if (streak >= 5) label = `🔥🔥 ${streak} ON FIRE!`;
+  if (streak >= 8) label = `🔥🔥🔥 ${streak} UNSTOPPABLE!`;
+  badge.textContent = label;
+  side.appendChild(badge);
+  setTimeout(() => badge.remove(), 1400);
+}
+
+function floatPlusOne(team, points = 1) {
+  const side = document.getElementById(`side${cap(team)}`);
+  const el = document.createElement('div');
+  el.className = points > 1 ? 'plus-one plus-two' : 'plus-one';
+  el.textContent = `+${points}`;
+  el.style.left = '50%';
+  el.style.top = '40%';
+  side.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+function confettiBurst(team) {
+  const side = document.getElementById(`side${cap(team)}`);
+  const rect = side.getBoundingClientRect();
+  const colors = team === 'red'
+    ? ['#ffd700', '#ff6b6b', '#fab1a0', '#fff', '#ff9a9e', '#ffeaa7']
+    : ['#ffd700', '#4dabf7', '#a29bfe', '#fff', '#74b9ff', '#55efc4'];
+  for (let i = 0; i < 25; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = (rect.left + Math.random() * rect.width) + 'px';
+    c.style.top = (rect.top + rect.height * 0.4) + 'px';
+    c.style.background = pickFrom(colors);
+    c.style.borderRadius = Math.random() < 0.5 ? '50%' : '2px';
+    c.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3500);
+  }
+}
+
+function bigConfettiBurst() {
+  const colors = ['#ff6b6b', '#ffd700', '#51cf66', '#4dabf7', '#fd79a8', '#a29bfe', '#fab1a0', '#55efc4'];
+  for (let i = 0; i < 180; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * window.innerWidth + 'px';
+    c.style.top = '-30px';
+    c.style.background = pickFrom(colors);
+    c.style.borderRadius = Math.random() < 0.5 ? '50%' : '2px';
+    c.style.width = (8 + Math.random() * 10) + 'px';
+    c.style.height = (10 + Math.random() * 14) + 'px';
+    c.style.animationDuration = (2.2 + Math.random() * 2.5) + 's';
+    c.style.animationDelay = (Math.random() * 0.6) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5500);
+  }
+}
+
+/* ============================================================
+   PAUSE
+============================================================ */
+function togglePause() {
+  isPaused = !isPaused;
+  document.getElementById('pauseOverlay').classList.toggle('active', isPaused);
+  if (!isPaused) {
+    // Resume timers
+    ['red', 'blue'].forEach(team => {
+      const t = teams[team];
+      if (t.timer && !t.timer.expired) {
+        t.timer.lastTick = Date.now();
+        requestAnimationFrame(() => tickTimer(team));
+      }
+    });
+    if (settings.music) startMusic();
+  } else {
+    stopMusic();
+  }
+}
+
+function confirmEnd() {
+  if (confirm('End the race and return to menu?')) resetGame();
+}
+
+/* ============================================================
+   END GAME
+============================================================ */
+const LOSER_MESSAGES = [
+  "So close! Great effort! 💪",
+  "Almost had it! 🎯",
+  "Awesome teamwork! 🙌",
+  "Nice race! Try again! 🚀",
+  "Great mathematicians! 🧠",
+  "You crushed it! 🌟",
+  "Brave warriors! ⚔️"
+];
+const WINNER_BANNERS = [
+  "CHAMPIONS OF THE RELAY!",
+  "MATH MASTERS!",
+  "UNSTOPPABLE LEGENDS!",
+  "VICTORY DANCE TIME!",
+  "NUMBER NINJAS!",
+  "RELAY ROYALTY!",
+  "TOTAL DOMINATION!"
+];
+
+function fireworkBurst(x, y, color) {
+  const count = 22;
+  const colors = color ? [color] : ['#ffd700', '#ff6b6b', '#4dabf7', '#51cf66', '#fd79a8', '#a29bfe'];
+  for (let i = 0; i < count; i++) {
+    const fw = document.createElement('div');
+    fw.className = 'firework';
+    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+    const dist = 100 + Math.random() * 120;
+    fw.style.left = x + 'px';
+    fw.style.top = y + 'px';
+    fw.style.background = pickFrom(colors);
+    fw.style.color = pickFrom(colors);
+    fw.style.setProperty('--fx', Math.cos(angle) * dist + 'px');
+    fw.style.setProperty('--fy', Math.sin(angle) * dist + 'px');
+    fw.style.animation = `fireworkBurst ${1 + Math.random() * 0.5}s ease-out forwards`;
+    document.body.appendChild(fw);
+    setTimeout(() => fw.remove(), 1700);
+  }
+}
+
+function fireworkShow(winner) {
+  if (gameOver !== true) return;
+  const themeColor = winner === 'red' ? '#ffd700'
+                   : winner === 'blue' ? '#74b9ff'
+                   : null;
+  const W = window.innerWidth, H = window.innerHeight;
+  let bursts = 0;
+  const burst = () => {
+    if (bursts >= 8 || !document.getElementById('endScreen').classList.contains('active')) return;
+    fireworkBurst(Math.random() * W, Math.random() * (H * 0.6) + 50, themeColor);
+    bursts++;
+    setTimeout(burst, 450 + Math.random() * 300);
+  };
+  burst();
+  // Second wave staggered
+  setTimeout(() => { let n = 0; const w2 = () => { if (n >= 6 || !document.getElementById('endScreen').classList.contains('active')) return; fireworkBurst(Math.random() * W, Math.random() * (H * 0.5) + 50, themeColor); n++; setTimeout(w2, 500); }; w2(); }, 2500);
+}
+
+function endGame() {
+  gameOver = true;
+  stopMusic();
+  playWin();
+  bigConfettiBurst();
+
+  setTimeout(() => {
+    document.getElementById('finalRed').textContent = teams.red.score;
+    document.getElementById('finalBlue').textContent = teams.blue.score;
+    document.getElementById('finalOutRed').textContent = `out of ${settings.questions}`;
+    document.getElementById('finalOutBlue').textContent = `out of ${settings.questions}`;
+    document.getElementById('finalNameRed').innerHTML = `${teamConfig.red.mascot} ${teamConfig.red.name}`;
+    document.getElementById('finalNameBlue').innerHTML = `${teamConfig.blue.mascot} ${teamConfig.blue.name}`;
+
+    let title, crownR = '', crownB = '', winner = null;
+    if (teams.red.score > teams.blue.score) { title = `🏆 ${teamConfig.red.name} WINS! 🏆`; crownR = '👑'; winner = 'red'; }
+    else if (teams.blue.score > teams.red.score) { title = `🏆 ${teamConfig.blue.name} WINS! 🏆`; crownB = '👑'; winner = 'blue'; }
+    else { title = "🤝 IT'S A TIE! 🤝"; crownR = '🏅'; crownB = '🏅'; }
+
+    const winnerTitleEl = document.getElementById('winnerTitle');
+    winnerTitleEl.innerHTML = `<span class="shake-text">${title}</span>`;
+    document.getElementById('crownRed').textContent = crownR;
+    document.getElementById('crownBlue').textContent = crownB;
+
+    // Theme background and giant mascot to winning team
+    const endScreen = document.getElementById('endScreen');
+    endScreen.classList.remove('red-win', 'blue-win', 'tie');
+    const giant = document.getElementById('giantMascot');
+    const finalTeamRed = document.getElementById('finalTeamRed');
+    const finalTeamBlue = document.getElementById('finalTeamBlue');
+    finalTeamRed.classList.remove('winning-team', 'losing-team');
+    finalTeamBlue.classList.remove('winning-team', 'losing-team');
+    document.getElementById('loserMsgRed').style.display = 'none';
+    document.getElementById('loserMsgBlue').style.display = 'none';
+
+    if (winner === 'red') {
+      endScreen.classList.add('red-win');
+      giant.textContent = teamConfig.red.mascot;
+      finalTeamRed.classList.add('winning-team');
+      finalTeamBlue.classList.add('losing-team');
+      const lm = document.getElementById('loserMsgBlue');
+      lm.textContent = pickFrom(LOSER_MESSAGES);
+      lm.style.display = 'inline-block';
+    } else if (winner === 'blue') {
+      endScreen.classList.add('blue-win');
+      giant.textContent = teamConfig.blue.mascot;
+      finalTeamBlue.classList.add('winning-team');
+      finalTeamRed.classList.add('losing-team');
+      const lm = document.getElementById('loserMsgRed');
+      lm.textContent = pickFrom(LOSER_MESSAGES);
+      lm.style.display = 'inline-block';
+    } else {
+      endScreen.classList.add('tie');
+      giant.textContent = '🤝';
+      finalTeamRed.classList.add('winning-team');
+      finalTeamBlue.classList.add('winning-team');
+    }
+
+    document.getElementById('victoryBanner').textContent = winner ? pickFrom(WINNER_BANNERS) : "WHAT A RACE!";
+
+    // Record scores
+    let isNewRecord = false;
+    if (winner) {
+      const team = teams[winner];
+      isNewRecord = recordScore(currentGrade, team.score, true, teamConfig[winner].name);
+    } else {
+      recordScore(currentGrade, teams.red.score, false, teamConfig.red.name);
+      recordScore(currentGrade, teams.blue.score, false, teamConfig.blue.name);
+    }
+    document.getElementById('newRecordBanner').classList.toggle('show', isNewRecord);
+
+    showScreen('endScreen');
+    setTimeout(bigConfettiBurst, 200);
+    setTimeout(() => fireworkShow(winner), 400);
+    setTimeout(bigConfettiBurst, 1800);
+    setTimeout(() => fireworkShow(winner), 3500);
+  }, 900);
+}
+
+function resetGame() {
+  gameOver = true;
+  stopMusic();
+  showScreen('startScreen');
+}
+
+/* ============================================================
+   MODALS
+============================================================ */
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+  if (id === 'settingsModal') renderSettingsModal();
+  if (id === 'teamsModal') {
+    pendingTeamConfig = JSON.parse(JSON.stringify(teamConfig));
+    renderTeamsModal();
+  }
+  if (id === 'scoresModal') renderScoresModal();
+  ensureAudio();
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+  if (id === 'settingsModal') saveSettingsToStorage();
+}
+
+/* Settings modal */
+function renderSettingsModal() {
+  document.querySelectorAll('.setting-options').forEach(group => {
+    const key = group.dataset.setting;
+    group.querySelectorAll('.setting-opt').forEach(btn => {
+      const val = btn.dataset.val;
+      const cur = String(settings[key]);
+      btn.classList.toggle('active', val === cur);
+      btn.onclick = () => {
+        let v = val;
+        if (val === 'true') v = true;
+        else if (val === 'false') v = false;
+        else if (!isNaN(parseInt(val))) v = parseInt(val);
+        settings[key] = v;
+        saveSettingsToStorage();
+        renderSettingsModal();
+      };
+    });
+  });
+}
+function resetSettings() {
+  settings = { ...defaultSettings };
+  saveSettingsToStorage();
+  renderSettingsModal();
+}
+
+/* Teams modal */
+let pendingTeamConfig = null;
+function renderTeamsModal() {
+  if (!pendingTeamConfig) pendingTeamConfig = JSON.parse(JSON.stringify(teamConfig));
+  document.getElementById('redName').value = pendingTeamConfig.red.name;
+  document.getElementById('blueName').value = pendingTeamConfig.blue.name;
+  ['red', 'blue'].forEach(team => {
+    const wrap = document.getElementById(`${team}Mascots`);
+    wrap.innerHTML = '';
+    MASCOT_OPTIONS.forEach(emoji => {
+      const btn = document.createElement('button');
+      btn.className = 'mascot-opt';
+      btn.type = 'button';
+      btn.textContent = emoji;
+      if (emoji === pendingTeamConfig[team].mascot) btn.classList.add('active');
+      btn.addEventListener('click', () => {
+        pendingTeamConfig[team].mascot = emoji;
+        wrap.querySelectorAll('.mascot-opt').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        playClick();
+      });
+      wrap.appendChild(btn);
+    });
+  });
+  document.getElementById('redName').oninput = (e) => { pendingTeamConfig.red.name = e.target.value || 'RED TEAM'; };
+  document.getElementById('blueName').oninput = (e) => { pendingTeamConfig.blue.name = e.target.value || 'BLUE TEAM'; };
+}
+function saveTeams() {
+  if (pendingTeamConfig) {
+    pendingTeamConfig.red.name = (pendingTeamConfig.red.name || 'RED TEAM').trim().toUpperCase().slice(0, 20);
+    pendingTeamConfig.blue.name = (pendingTeamConfig.blue.name || 'BLUE TEAM').trim().toUpperCase().slice(0, 20);
+    teamConfig = pendingTeamConfig;
+    saveTeamsToStorage();
+  }
+  pendingTeamConfig = null;
+  closeModal('teamsModal');
+}
+function resetTeams() {
+  pendingTeamConfig = JSON.parse(JSON.stringify(defaultTeams));
+  renderTeamsModal();
+}
+
+/* Scores modal */
+let currentScoresTab = '5';
+function renderScoresModal() {
+  const grades = [
+    { id: '1', label: 'G1' },
+    { id: '2', label: 'G2' },
+    { id: '3', label: 'G3' },
+    { id: '4', label: 'G4' },
+    { id: '5', label: 'G5' },
+    { id: '6', label: 'G6' },
+    { id: '7', label: 'G7' },
+    { id: '8', label: 'G8' },
+    { id: 'algebra1', label: 'Algebra 1' },
+    { id: 'mixed', label: 'Mixed' }
+  ];
+  const tabs = document.getElementById('scoresTabs');
+  tabs.innerHTML = '';
+  grades.forEach(g => {
+    const tab = document.createElement('button');
+    tab.className = 'scores-tab' + (g.id === currentScoresTab ? ' active' : '');
+    tab.textContent = g.label;
+    tab.onclick = () => { currentScoresTab = g.id; renderHighScores(g.id); renderScoresModal(); };
+    tabs.appendChild(tab);
+  });
+  renderHighScores(currentScoresTab);
+}
+
+function renderHighScores(grade) {
+  const list = document.getElementById('scoresList');
+  list.innerHTML = '';
+  const scores = getHighScores(grade);
+  if (!scores.length) {
+    const li = document.createElement('li');
+    li.className = 'empty';
+    li.textContent = '🏁 No records yet — race to set the first!';
+    list.appendChild(li);
+    return;
+  }
+  scores.forEach((s, i) => {
+    const li = document.createElement('li');
+    if (i === 0) li.classList.add('top');
+    li.innerHTML = `
+      <span><span class="rank-badge">#${i + 1}</span> ${s.teamName || 'Team'}</span>
+      <span>${s.score} pts ${s.won ? '🏆' : ''} <small style="opacity:0.7">— ${s.date}</small></span>
+    `;
+    list.appendChild(li);
+  });
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+function buildAnimatedTitle() {
+  const titleEl = document.getElementById('titleAnim');
+  const text = 'MATH RELAY!';
+  titleEl.innerHTML = '';
+  [...text].forEach((ch, i) => {
+    const s = document.createElement('span');
+    s.textContent = ch === ' ' ? ' ' : ch;
+    s.style.animationDelay = (i * 0.08) + 's';
+    titleEl.appendChild(s);
+  });
+}
+buildAnimatedTitle();
+
+document.querySelectorAll('.grade-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    ensureAudio();
+    playClick();
+    const grade = btn.dataset.grade;
+    if (grade === 'mixed') startGame(grade, 'mixed');
+    else showTopicScreen(grade);
+  });
+});
+
+document.getElementById('raceAgainBtn').addEventListener('click', () => {
+  playClick();
+  startGame(currentGrade, currentTopic);
+});
+
+document.getElementById('pauseBtn').addEventListener('click', () => {
+  playClick();
+  togglePause();
+});
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+window.addEventListener('beforeunload', e => {
+  if (document.getElementById('gameScreen').classList.contains('active') && !gameOver) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('gameScreen').classList.contains('active') && !gameOver) {
+      togglePause();
+    }
+  }
+});
+
+document.addEventListener('dblclick', e => e.preventDefault());
+</script>
+</body>
+</html>

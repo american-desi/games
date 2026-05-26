@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Games — Josh Thomas</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--fg:#f5f4f0;--muted:#8a8a92;--accent:#66ccff;--card:#13131a;--border:rgba(255,255,255,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--fg);font:16px/1.6 'Inter Tight',system-ui,sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.45;
+background:radial-gradient(ellipse at 20% 25%,rgba(102,204,255,.18),transparent 55%),
+radial-gradient(ellipse at 80% 70%,rgba(255,107,53,.1),transparent 55%);filter:blur(45px)}
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:60px 32px 100px}
+header{margin-bottom:60px}
+.kind{display:inline-block;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.18em;
+padding:7px 11px;border-radius:4px;margin-bottom:28px;text-transform:uppercase;
+background:rgba(102,204,255,.1);color:var(--accent);border:1px solid rgba(102,204,255,.25)}
+h1{font:400 clamp(2.5rem,7vw,5rem)/1.05 'Instrument Serif',serif;letter-spacing:-.02em;margin-bottom:20px;
+background:linear-gradient(135deg,#fff,#bbb);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tagline{font:400 clamp(1.15rem,2.3vw,1.4rem)/1.4 'Instrument Serif',serif;font-style:italic;color:#b5b5bd;margin-bottom:24px;max-width:720px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:40px}
+.tile{display:block;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;
+text-decoration:none;color:var(--fg);transition:all .2s}
+.tile:hover{border-color:rgba(102,204,255,.4);transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.tile h3{font:500 18px 'Inter Tight',sans-serif;margin-bottom:6px}
+.tile p{color:var(--muted);font-size:14px}
+.tile .arrow{margin-top:18px;color:var(--accent);font:13px 'JetBrains Mono',monospace}
+footer{margin-top:80px;padding-top:32px;border-top:1px solid var(--border);color:var(--muted);font-size:13px;
+display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+footer a{color:var(--accent);text-decoration:none}
+</style></head><body><div class="wrap">
+<header>
+<span class="kind">Games · HTML5</span>
+<h1>Games</h1>
+<p class="tagline">A collection of single-file web games. Educational, frantic, and built for play.</p>
+</header>
+<div class="grid">
+<a class="tile" href="bonkers-blitz.html"><h3>Bonkers Blitz</h3><p>Click to play in browser.</p><div class="arrow">→ play</div></a><a class="tile" href="math-relay-race.html"><h3>Math Relay Race</h3><p>Click to play in browser.</p><div class="arrow">→ play</div></a><a class="tile" href="kinneret-math-mania.html"><h3>Kinneret Math Mania</h3><p>Click to play in browser.</p><div class="arrow">→ play</div></a><a class="tile" href="aurora-drift/index.html"><h3>Aurora Drift</h3><p>Click to play in browser.</p><div class="arrow">→ play</div></a>
+</div>
+<footer><span>Built by Josh Thomas</span><span><a href="https://github.com/american-desi">@american-desi</a></span></footer>
+</div></body></html>
